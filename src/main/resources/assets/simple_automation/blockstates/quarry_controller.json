@@ -1,0 +1,6 @@
+{ "variants": {
+  "status=invalid": { "model": "simple_automation:block/quarry_controller" },
+  "status=idle":    { "model": "simple_automation:block/quarry_controller" },
+  "status=paused":  { "model": "simple_automation:block/quarry_controller" },
+  "status=working": { "model": "simple_automation:block/quarry_controller_on" }
+} }

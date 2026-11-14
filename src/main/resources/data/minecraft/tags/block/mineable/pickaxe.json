@@ -1,0 +1,13 @@
+{
+  "values": [
+    "simple_automation:border_marker",
+    "simple_automation:quarry_controller",
+    "simple_automation:lumber_controller",
+    "simple_automation:forge_controller",
+    "simple_automation:crusher_controller",
+    "simple_automation:farm_controller",
+    "simple_automation:shepherd_controller",
+    "simple_automation:ranch_controller",
+    "simple_automation:pipe"
+  ]
+}

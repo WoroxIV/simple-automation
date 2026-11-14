@@ -1,0 +1,18 @@
+{ "parent": "minecraft:block/block", "render_type": "minecraft:cutout",
+  "textures": { "marker": "simple_automation:block/border_marker", "particle": "simple_automation:block/border_marker" },
+  "elements": [
+    { "from": [7, 0, 7], "to": [9, 14, 9], "faces": {
+      "north": {"uv": [0, 2, 2, 16], "texture": "#marker"}, "south": {"uv": [0, 2, 2, 16], "texture": "#marker"},
+      "east":  {"uv": [2, 2, 4, 16], "texture": "#marker"}, "west":  {"uv": [2, 2, 4, 16], "texture": "#marker"},
+      "up":    {"uv": [0, 0, 2, 2],  "texture": "#marker"}, "down":  {"uv": [0, 14, 2, 16], "texture": "#marker", "cullface": "down"} } },
+    { "from": [6.5, 14, 6.5], "to": [9.5, 15, 9.5], "faces": {
+      "north": {"uv": [0, 0, 3, 1], "texture": "#marker"}, "south": {"uv": [0, 0, 3, 1], "texture": "#marker"},
+      "east":  {"uv": [0, 0, 3, 1], "texture": "#marker"}, "west":  {"uv": [0, 0, 3, 1], "texture": "#marker"},
+      "up":    {"uv": [0, 0, 3, 3], "texture": "#marker"}, "down":  {"uv": [0, 0, 3, 3], "texture": "#marker"} } },
+    { "from": [9, 8, 8], "to": [15, 14, 8], "faces": {
+      "north": {"uv": [16, 0, 4, 8], "texture": "#marker"}, "south": {"uv": [4, 0, 16, 8], "texture": "#marker"} } }
+  ],
+  "display": {
+    "gui": { "rotation": [30, 225, 0], "translation": [0, 0, 0], "scale": [0.8, 0.8, 0.8] },
+    "fixed": { "scale": [0.8, 0.8, 0.8] }
+  } }

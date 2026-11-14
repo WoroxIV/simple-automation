@@ -1,0 +1,1 @@
+{ "type": "minecraft:crafting_shapeless", "category": "redstone", "ingredients": [ "minecraft:lightning_rod", "minecraft:redstone" ], "result": { "id": "simple_automation:border_marker", "count": 2 } }

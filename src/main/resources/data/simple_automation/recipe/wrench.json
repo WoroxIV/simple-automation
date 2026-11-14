@@ -1,0 +1,2 @@
+{ "type": "minecraft:crafting_shaped", "category": "tools", "pattern": [ "C C", " C ", " C " ],
+  "key": { "C": "minecraft:copper_ingot" }, "result": { "id": "simple_automation:wrench" } }

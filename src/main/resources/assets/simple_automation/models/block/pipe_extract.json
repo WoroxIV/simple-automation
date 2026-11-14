@@ -1,0 +1,5 @@
+{ "textures": { "ring": "simple_automation:block/pipe_extract", "particle": "simple_automation:block/pipe_extract" },
+  "elements": [ { "from": [4,4,0], "to": [12,12,2], "faces": {
+    "north": {"uv":[4,4,12,12],"texture":"#ring"}, "south": {"uv":[4,4,12,12],"texture":"#ring"},
+    "east": {"uv":[0,4,2,12],"texture":"#ring"}, "west": {"uv":[0,4,2,12],"texture":"#ring"},
+    "up": {"uv":[4,0,12,2],"texture":"#ring"}, "down": {"uv":[4,0,12,2],"texture":"#ring"} } } ] }

@@ -1,0 +1,2 @@
+{ "type": "minecraft:crafting_shaped", "category": "redstone", "pattern": [ "P", "C", "H" ],
+  "key": { "P": "minecraft:paper", "C": "minecraft:copper_ingot", "H": "minecraft:hopper" }, "result": { "id": "simple_automation:filter" } }

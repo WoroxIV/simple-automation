@@ -1,0 +1,52 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="${mod_license}"
+# TODO (auteur) : décommenter et mettre l'adresse de suivi des bugs avant la sortie.
+#issueTrackerURL="https://github.com/<auteur>/<depot>/issues"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="${mod_authors}"
+description='''${mod_description}'''
+# Logo affiché dans la liste des mods (à la racine du jar). Pixel art : pas de flou à l'agrandissement.
+logoFile="simple_automation_logo.png"
+logoBlur=false
+credits="Built on NeoForge. Thanks to Mojang for the copper golem, and to the Jade and JEI teams for their APIs."
+# TODO (auteur) : décommenter et mettre la page du mod (Modrinth, CurseForge…) avant la sortie.
+#displayURL="https://modrinth.com/mod/<slug>"
+
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
+    versionRange="[${neo_version},)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# Intégrations optionnelles : le mod fonctionne sans elles.
+# Jade : infobulle des contrôleurs et des pipes (le serveur envoie les compteurs des golems s'il a Jade aussi).
+[[dependencies.${mod_id}]]
+    modId="jade"
+    type="optional"
+    versionRange="[21.0,)"
+    ordering="NONE"
+    side="BOTH"
+
+# JEI : pages d'explication et glisser-déposer dans le filtre (client seulement).
+[[dependencies.${mod_id}]]
+    modId="jei"
+    type="optional"
+    versionRange="[27.0,)"
+    ordering="NONE"
+    side="CLIENT"
+
+[[accessTransformers]]
+file="META-INF/accesstransformer.cfg"
