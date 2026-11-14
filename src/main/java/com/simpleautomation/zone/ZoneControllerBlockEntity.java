@@ -91,6 +91,7 @@ public class ZoneControllerBlockEntity extends BlockEntity {
     private final Job job;
     private final List<Worker> workers = new ArrayList<>();
     private final ZoneInventory inventory = new ZoneInventory(this);
+    private final XpBank xp = new XpBank(this);
     private @Nullable ZoneBounds bounds;
     private ZoneBounds.Problem problem = ZoneBounds.Problem.NO_MARKER;
     private @Nullable UUID ownerId;
@@ -110,6 +111,8 @@ public class ZoneControllerBlockEntity extends BlockEntity {
     public @Nullable ZoneBounds bounds() { return bounds; }
     public List<Worker> workers() { return workers; }
     public ZoneInventory inventory() { return inventory; }
+    /** L'XP gagnée par la zone, qui sort en cristaux : voir {@link XpBank}. */
+    public XpBank xp() { return xp; }
     public JobType jobType() { return jobType; }
     public Job job() { return job; }
 
@@ -141,7 +144,10 @@ public class ZoneControllerBlockEntity extends BlockEntity {
         }
         if (be.bounds != null) {
             be.job.tick(be);
-            if (time % 10 == 0) be.paused = be.inventory.flushAndCheckBlocked();
+            if (time % 10 == 0) {
+                be.xp.drain(be.inventory);
+                be.paused = be.inventory.flushAndCheckBlocked();
+            }
             // En pause (tampon plein), les golems lâchent leur tâche et remontent près du contrôleur.
             for (Worker w : List.copyOf(be.workers)) be.tickWorker(server, w, be.paused);
         }
@@ -691,6 +697,8 @@ public class ZoneControllerBlockEntity extends BlockEntity {
         if (idle > 0) player.sendSystemMessage(Component.translatable("message.simple_automation.zone.idle", idle).withStyle(ChatFormatting.GRAY));
         if (!inventory.hasContainer()) player.sendSystemMessage(Component.translatable("message.simple_automation.zone.no_chest").withStyle(ChatFormatting.YELLOW));
         if (paused) player.sendSystemMessage(Component.translatable("message.simple_automation.zone.paused").withStyle(ChatFormatting.RED));
+        if (xp.stored() >= 0.05) player.sendSystemMessage(Component.translatable("message.simple_automation.zone.xp",
+                String.format(java.util.Locale.ROOT, "%.1f", xp.stored()), XpBank.XP_PER_CRYSTAL).withStyle(ChatFormatting.GRAY));
         Component progress = this.job.progress(this);
         if (progress != null) player.sendSystemMessage(progress.copy().withStyle(ChatFormatting.GRAY));
         this.job.describeTo(this, player::sendSystemMessage);
@@ -740,6 +748,7 @@ public class ZoneControllerBlockEntity extends BlockEntity {
         out.store("buffer", ZoneInventory.BUFFER_CODEC, inventory.buffer());
         if (ownerId != null) out.store("owner", UUIDUtil.CODEC, ownerId);
         out.putBoolean("paused", paused);
+        out.putDouble("xp", xp.stored());
         job.save(out.child("job"));
     }
 
@@ -756,6 +765,7 @@ public class ZoneControllerBlockEntity extends BlockEntity {
         inventory.load(in.read("buffer", ZoneInventory.BUFFER_CODEC).orElse(List.of()));
         ownerId = in.read("owner", UUIDUtil.CODEC).orElse(null);
         paused = in.getBooleanOr("paused", false);
+        xp.load(in.getDoubleOr("xp", 0));
         job.load(in.childOrEmpty("job"));
     }
 

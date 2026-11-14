@@ -34,8 +34,14 @@ public final class ZoneInventory {
         this.owner = owner;
     }
 
-    /** Premier item des coffres qui passe le filtre (copie, rien n'est retiré), ou une pile vide. */
+    /**
+     * Premier item des coffres qui passe le filtre (copie, rien n'est retiré), ou une pile vide.
+     * Le tampon du contrôleur compte aussi : des pousses ou des seaux qui n'ont pas trouvé de place restent utilisables.
+     */
     public ItemStack find(Predicate<ItemStack> filter) {
+        for (ItemStack s : buffer) {
+            if (!s.isEmpty() && filter.test(s)) return s.copy();
+        }
         for (ResourceHandler<ItemResource> h : handlers()) {
             for (int i = 0; i < h.size(); i++) {
                 ItemResource r = h.getResource(i);
@@ -50,6 +56,9 @@ public final class ZoneInventory {
     /** Nombre total d'items qui passent le filtre, toutes piles de tous les coffres confondues. */
     public int count(Predicate<ItemStack> filter) {
         int total = 0;
+        for (ItemStack s : buffer) {
+            if (!s.isEmpty() && filter.test(s)) total += s.getCount();
+        }
         for (ResourceHandler<ItemResource> h : handlers()) {
             for (int i = 0; i < h.size(); i++) {
                 ItemResource r = h.getResource(i);
@@ -124,8 +133,19 @@ public final class ZoneInventory {
         return buffer.size() >= BUFFER_LIMIT;
     }
 
-    /** Retire jusqu'à {@code count} items qui passent le filtre. Renvoie une pile vide si aucun coffre n'en a. */
+    /**
+     * Retire jusqu'à {@code count} items qui passent le filtre, d'abord du tampon (qu'on libère ainsi), puis des coffres.
+     * Renvoie une pile vide si personne n'en a.
+     */
     public ItemStack extract(Predicate<ItemStack> filter, int count) {
+        for (int i = 0; i < buffer.size(); i++) {
+            ItemStack s = buffer.get(i);
+            if (s.isEmpty() || !filter.test(s)) continue;
+            ItemStack got = s.split(Math.min(count, s.getCount()));
+            if (s.isEmpty()) buffer.remove(i);
+            owner.setChanged();
+            return got;
+        }
         for (ResourceHandler<ItemResource> h : handlers()) {
             ResourceStack<ItemResource> got = ResourceHandlerUtil.extractFirst(h, r -> filter.test(r.toStack()), count, null);
             if (got != null && got.amount() > 0) return got.resource().toStack(got.amount());

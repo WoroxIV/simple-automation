@@ -102,5 +102,9 @@
   "jei.simple_automation.info.border_marker": "Place two markers at opposite corners of a rectangle to mark a work zone, then a job controller inside it. Zones cannot overlap. Right-click a marker to see which controller it belongs to.",
   "jei.simple_automation.info.pipe": "Moves items instantly between the containers it touches. A side facing a container inserts by default; switch it to extract with the Wrench and the pipe pulls items from that container into the other ones of the network, in turn. A pipe can also empty the buffer of a job controller.",
   "jei.simple_automation.info.wrench": "Right-click a pipe arm. Toward another pipe, it separates or joins them; toward a container, it cycles between insert, extract and disabled. Sneak-right-click breaks the pipe at once.",
-  "jei.simple_automation.info.filter": "Right-click in the air to choose up to 9 items and switch between whitelist and blacklist; with JEI you can drag items from the list into the slots. Right-click a filled slot to cycle through the item's tags. Right-click a pipe arm facing a container to put the filter on it, and take it back with an empty hand."
+  "jei.simple_automation.info.filter": "Right-click in the air to choose up to 9 items and switch between whitelist and blacklist; with JEI you can drag items from the list into the slots. Right-click a filled slot to cycle through the item's tags. Right-click a pipe arm facing a container to put the filter on it, and take it back with an empty hand.",
+  "item.simple_automation.xp_crystal": "Experience Crystal",
+  "message.simple_automation.zone.xp": "Experience waiting: %s / %s (next crystal)",
+  "jade.simple_automation.xp": "Experience: %s / %s",
+  "jei.simple_automation.info.xp_crystal": "The experience earned by golems (smelting, ores, animals, fishing…) never drops as orbs: the controller stores it and puts one crystal in its chests for every 10 points. Right-click to use one crystal, sneak and right-click to use the whole stack. The experience is released at your feet as orbs, so Mending repairs your gear as usual."
 }

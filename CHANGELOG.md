@@ -1,3 +1,8 @@
+## Unreleased
+
+- Experience Crystal (new item): the experience earned by golems never drops as orbs anymore. The controller stores it and puts one crystal (10 experience points) in its chests for every 10 points. Right-click to use one crystal, sneak to use the whole stack; Mending repairs as usual. Clicking the controller (and Jade) shows the experience waiting for the next crystal.
+- Golems also take what they need (saplings, food, buckets…) from the items waiting in the controller, not only from the chests.
+
 ## 2.1.0
 
 Fixes and improvements from playtesting.

@@ -30,6 +30,8 @@ enum ControllerComponentProvider implements IBlockComponentProvider {
         if (data.noTool() > 0) tooltip.add(Component.translatable("jade.simple_automation.no_tool", data.noTool()).withStyle(ChatFormatting.YELLOW));
         if (data.frozen() > 0) tooltip.add(Component.translatable("jade.simple_automation.frozen", data.frozen()).withStyle(ChatFormatting.YELLOW));
         if (data.buffered() > 0) tooltip.add(Component.translatable("jade.simple_automation.buffer", data.buffered()).withStyle(ChatFormatting.GRAY));
+        if (data.xp() >= 0.05F) tooltip.add(Component.translatable("jade.simple_automation.xp",
+                String.format(java.util.Locale.ROOT, "%.1f", data.xp()), com.simpleautomation.zone.XpBank.XP_PER_CRYSTAL).withStyle(ChatFormatting.GRAY));
         if (!data.hasChest()) tooltip.add(Component.translatable("jade.simple_automation.no_chest").withStyle(ChatFormatting.YELLOW));
         data.progress().ifPresent(p -> tooltip.add(p.copy().withStyle(ChatFormatting.GRAY)));
     }

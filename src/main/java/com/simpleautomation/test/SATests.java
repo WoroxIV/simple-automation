@@ -131,6 +131,8 @@ public final class SATests {
         test("lumber_skips_wrong_fungus", MiscTests::lumberSkipsWrongFungus, 900);
         test("farm_high_cocoa", MiscTests::farmHighCocoa, 900, NO_RANDOM_TICKS);
         test("farm_seeds_tag_skips_unharvestable", MiscTests::farmSeedsTagSkipsUnharvestable, 900, NO_RANDOM_TICKS);
+        // Évolutions : XP en cristaux, Lumber, Crusher, Farm, Barn, nouveaux contrôleurs
+        test("xp_bank_makes_crystals", XpTests::bankMakesCrystals, 100);
     }
 
     public static void register(IEventBus modBus) {

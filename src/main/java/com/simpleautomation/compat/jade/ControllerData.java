@@ -15,9 +15,10 @@ import net.minecraft.world.item.ItemStack;
  * à partir des marionnettes qu'il connaît (sans le tampon, les coffres ni l'avancement, qu'il ne reçoit pas).
  *
  * @param buffered items en attente dans le contrôleur, -1 si inconnu
+ * @param xp XP en attente avant le prochain cristal (0 si inconnue)
  */
 record ControllerData(int workers, int working, int idle, int noTool, int frozen, int buffered, boolean hasChest,
-                      Optional<Component> progress) {
+                      Optional<Component> progress, float xp) {
     static final StreamCodec<RegistryFriendlyByteBuf, ControllerData> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT, ControllerData::workers,
             ByteBufCodecs.VAR_INT, ControllerData::working,
@@ -27,20 +28,21 @@ record ControllerData(int workers, int working, int idle, int noTool, int frozen
             ByteBufCodecs.VAR_INT, ControllerData::buffered,
             ByteBufCodecs.BOOL, ControllerData::hasChest,
             ComponentSerialization.OPTIONAL_STREAM_CODEC, ControllerData::progress,
+            ByteBufCodecs.FLOAT, ControllerData::xp,
             ControllerData::new);
 
     /** Côté serveur : tout est connu. */
     static ControllerData server(ZoneControllerBlockEntity be) {
         int buffered = be.inventory().buffer().stream().mapToInt(ItemStack::getCount).sum();
-        return count(be, buffered, be.inventory().hasContainer(), Optional.ofNullable(be.job().progress(be)));
+        return count(be, buffered, be.inventory().hasContainer(), Optional.ofNullable(be.job().progress(be)), (float) be.xp().stored());
     }
 
     /** Côté client, faute de mieux : seulement les golems. */
     static ControllerData client(ZoneControllerBlockEntity be) {
-        return count(be, -1, true, Optional.empty());
+        return count(be, -1, true, Optional.empty(), 0);
     }
 
-    private static ControllerData count(ZoneControllerBlockEntity be, int buffered, boolean hasChest, Optional<Component> progress) {
+    private static ControllerData count(ZoneControllerBlockEntity be, int buffered, boolean hasChest, Optional<Component> progress, float xp) {
         int working = 0, idle = 0, noTool = 0, frozen = 0;
         for (Worker w : be.workers()) {
             switch (w.status) {
@@ -50,6 +52,6 @@ record ControllerData(int workers, int working, int idle, int noTool, int frozen
                 case FROZEN -> frozen++;
             }
         }
-        return new ControllerData(be.workers().size(), working, idle, noTool, frozen, buffered, hasChest, progress);
+        return new ControllerData(be.workers().size(), working, idle, noTool, frozen, buffered, hasChest, progress, xp);
     }
 }

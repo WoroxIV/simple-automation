@@ -1,6 +1,7 @@
 package com.simpleautomation.registry;
 
 import com.simpleautomation.SimpleAutomation;
+import com.simpleautomation.item.XpCrystalItem;
 import com.simpleautomation.pipe.WrenchItem;
 import com.simpleautomation.pipe.filter.FilterItem;
 import net.minecraft.core.registries.Registries;
@@ -8,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.Rarity;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -27,6 +29,7 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> PIPE = ITEMS.registerSimpleBlockItem("pipe", ModBlocks.PIPE);
     public static final DeferredItem<WrenchItem> WRENCH = ITEMS.registerItem("wrench", WrenchItem::new, p -> p.stacksTo(1));
     public static final DeferredItem<FilterItem> FILTER = ITEMS.registerItem("filter", FilterItem::new, p -> p.stacksTo(1));
+    public static final DeferredItem<XpCrystalItem> XP_CRYSTAL = ITEMS.registerItem("xp_crystal", XpCrystalItem::new, p -> p.rarity(Rarity.UNCOMMON));
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.simple_automation"))
@@ -44,6 +47,7 @@ public final class ModItems {
                 out.accept(PIPE.get());
                 out.accept(WRENCH.get());
                 out.accept(FILTER.get());
+                out.accept(XP_CRYSTAL.get());
             })
             .build());
 

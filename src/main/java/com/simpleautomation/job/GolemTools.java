@@ -125,6 +125,18 @@ public final class GolemTools {
         }
     }
 
+    /**
+     * Aspire les orbes d'XP d'une boîte vers la zone (orbes de reproduction, que la vanilla crée sans événement).
+     * Une orbe peut en avoir absorbé d'autres identiques : sa valeur compte autant de fois.
+     */
+    public static void collectXp(ZoneControllerBlockEntity zone, net.minecraft.world.phys.AABB box) {
+        if (!(zone.getLevel() instanceof ServerLevel level)) return;
+        for (var orb : level.getEntitiesOfClass(net.minecraft.world.entity.ExperienceOrb.class, box, e -> e.isAlive())) {
+            zone.xp().add((double) orb.getValue() * Math.max(1, orb.count));
+            orb.discard();
+        }
+    }
+
     private GolemTools() {
     }
 }

@@ -48,6 +48,7 @@ public final class SimpleAutomation {
         com.simpleautomation.test.SATests.register(modBus);
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Pre e) -> WorkBudget.reset());
         NeoForge.EVENT_BUS.addListener(SimpleAutomation::onEntityJoin);
+        NeoForge.EVENT_BUS.addListener(com.simpleautomation.zone.XpCapture::onExperienceDrop);
         // Un golem sans marque (vieille sauvegarde) qui change de dimension reçoit une marque « jamais tout juste construit » :
         // sa copie dans l'autre dimension entre dans le monde comme un golem neuf (loadedFromDisk faux) et la garde.
         NeoForge.EVENT_BUS.addListener((EntityTravelToDimensionEvent e) -> {
