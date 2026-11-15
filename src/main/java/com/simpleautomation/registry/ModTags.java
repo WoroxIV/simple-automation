@@ -3,6 +3,7 @@ package com.simpleautomation.registry;
 import com.simpleautomation.SimpleAutomation;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
@@ -18,6 +19,8 @@ public final class ModTags {
 
     /** Pousses qui ne donnent un arbre qu'en carré de 4 (chêne noir, chêne pâle) : la scierie attend d'en avoir 4. */
     public static final TagKey<Item> MEGA_ONLY_SAPLINGS = TagKey.create(Registries.ITEM, SimpleAutomation.id("mega_only_saplings"));
+    /** Monstres que le poste de garde n'attaque jamais (le Warden par défaut), en plus des boss (c:bosses). */
+    public static final TagKey<EntityType<?>> GUARD_BLACKLIST = TagKey.create(Registries.ENTITY_TYPE, SimpleAutomation.id("guard_blacklist"));
 
     private ModTags() {
     }

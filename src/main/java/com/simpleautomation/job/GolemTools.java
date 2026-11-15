@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import org.jspecify.annotations.Nullable;
@@ -52,6 +53,12 @@ public final class GolemTools {
     /** Houe, ou tout outil qui sait labourer. */
     public static boolean isHoe(ItemStack tool) {
         return !tool.isEmpty() && (tool.is(ItemTags.HOES) || tool.canPerformAction(ItemAbilities.HOE_TILL));
+    }
+
+    /** Épées, armes de mêlée (tag commun : haches, masse, trident), lances, ou tout objet moddé qui sait faire un coup balayé. */
+    public static boolean isWeapon(ItemStack tool) {
+        return !tool.isEmpty() && (tool.is(ItemTags.SWORDS) || tool.is(Tags.Items.MELEE_WEAPON_TOOLS) || tool.is(Tags.Items.TOOLS_SPEAR)
+                || tool.canPerformAction(ItemAbilities.SWORD_SWEEP));
     }
 
     /** Vitesse de minage comme pour un joueur : vitesse de l'outil sur ce bloc, plus le bonus d'Efficacité. */

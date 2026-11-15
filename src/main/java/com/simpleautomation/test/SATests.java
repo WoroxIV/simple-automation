@@ -151,6 +151,8 @@ public final class SATests {
         test("lumber_fungus_beside_netherrack", MiscTests::lumberFungusBesideNetherrack, 900);
         test("fishery_catches_loot_and_xp", FisheryTests::catchesLootAndXp, 2400);
         test("fishery_open_water_treasure", FisheryTests::openWaterTreasure, 100);
+        test("guard_kills_zombies", GuardTests::killsZombies, 900);
+        test("guard_skips_excluded", GuardTests::skipsExcluded, 600);
     }
 
     public static void register(IEventBus modBus) {

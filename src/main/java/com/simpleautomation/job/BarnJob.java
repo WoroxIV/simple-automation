@@ -22,7 +22,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -84,17 +83,11 @@ public final class BarnJob implements Job {
     private long kindsScannedAt = -1L;
 
     private static Mode mode(ItemStack tool) {
-        if (isWeapon(tool)) return Mode.CULL;
+        if (GolemTools.isWeapon(tool)) return Mode.CULL;
         if (isShears(tool)) return Mode.SHEAR;
         if (isBrush(tool)) return Mode.BRUSH;
         if (tool.is(Items.BUCKET)) return Mode.MILK;
         return Mode.BREED;
-    }
-
-    /** Épées, armes de mêlée (tag commun : haches, masse, trident), lances, ou tout objet moddé qui sait faire un coup balayé. */
-    private static boolean isWeapon(ItemStack tool) {
-        return tool.is(ItemTags.SWORDS) || tool.is(Tags.Items.MELEE_WEAPON_TOOLS) || tool.is(Tags.Items.TOOLS_SPEAR)
-                || tool.canPerformAction(ItemAbilities.SWORD_SWEEP);
     }
 
     private static boolean isShears(ItemStack tool) {

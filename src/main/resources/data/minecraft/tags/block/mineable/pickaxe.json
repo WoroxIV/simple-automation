@@ -8,6 +8,7 @@
     "simple_automation:farm_controller",
     "simple_automation:barn_controller",
     "simple_automation:fishery_controller",
+    "simple_automation:guard_controller",
     "simple_automation:pipe"
   ]
 }

@@ -1,6 +1,6 @@
 # Simple Automation
 
-**Put your copper golems to work.** Mark out a zone, drop a job controller in it, and every copper golem inside starts digging, chopping, smelting, farming or tending animals or fishing for you. No power, no machines to upgrade: the tool you hand a golem decides how well it works.
+**Put your copper golems to work.** Mark out a zone, drop a job controller in it, and every copper golem inside starts digging, chopping, smelting, farming, tending animals, fishing or guarding for you. No power, no machines to upgrade: the tool you hand a golem decides how well it works.
 
 Made for NeoForge 1.21.11. Works in survival from the start: everything is crafted from copper, a chest and a bit of redstone.
 
@@ -31,7 +31,7 @@ A golem holding something useless for its job shows a **"?"** above its head.
 
 ---
 
-## The seven jobs
+## The eight jobs
 
 | Controller | Golem holds | What happens |
 |---|---|---|
@@ -42,11 +42,13 @@ A golem holding something useless for its job shows a **"?"** above its head.
 | **Farm** | nothing or a hoe | Harvests ripe crops and replants them, sows seeds from the chest on empty farmland, picks sweet berries and ripe cocoa (up to 12 blocks up jungle trunks). Pumpkin and melon stems keep a free spot for their fruit. |
 | **Barn** | animal food, shears, a bucket, a brush or a weapon | Food: breeds the animals that eat it (food taken from the chest), up to a limit per species (10 by default, babies included). Shears: shears sheep, mooshrooms and other shearable animals (modded ones too; a sheared mooshroom becomes a cow, like with a player). Bucket: milks cows, mooshrooms and goats into empty buckets from the chest. Brush: brushes armadillos for scutes. Sword, axe, mace or trident: culls the extra adults above the limit (never babies, named, leashed or tamed animals). Eggs and drops lying in the zone go to the chest, and experience comes out as crystals. |
 | **Fishery** | fishing rod | Golems stand on the bank and fish in the still water of the zone, one water block each, within 5 blocks of the bank. Same loot as a player: Luck of the Sea and Lure count, and treasure only bites in open water (at least 5×5 and 2 deep). Each catch gives 1 to 6 experience, as crystals, and wears the rod. |
+| **Guard Post** | sword, axe, mace or trident | Golems strike the hostile mobs in the zone like a player: one full-strength hit per attack cooldown, with the weapon's damage and enchantments, one point of wear per hit. Kills count as player kills (Looting works); drops go to the chest and experience comes out as crystals. Bosses, named or leashed mobs and the Warden are left alone. |
 
 Tips:
 - **Quarry:** golems place cobblestone under themselves over caves, lava and water, and seal lava next to the blocks they dig. Put cobblestone in the chest; if there is none they still place it. The quarry waits on the stone layer until someone has a pickaxe.
 - **Barn:** fence the zone in. The controller warns you when animals wander out.
 - **Fishery:** dig a pond at least 5×5 and 2 deep, with nothing above it, for treasure: the water around the bobber must be open, like for a player.
+- **Guard Post:** mobs only spawn near players, so build the post where you spend time (a dark room next to your base). Mobs cannot hurt the golems.
 - **Crusher:** leave some free cells with a solid floor inside the zone, at the markers' height: that is where golems set the ores down.
 
 ---
@@ -87,6 +89,7 @@ All controllers use the same shape: copper ingots around, a **chest** in the mid
 | Farm | iron hoe |
 | Barn | hay bale |
 | Fishery | fishing rod |
+| Guard Post | iron sword |
 
 - Border Marker ×2: lightning rod + redstone (shapeless)
 - Copper Pipe ×8: copper ingot, glass, copper ingot
@@ -108,6 +111,7 @@ With JEI installed, every block and item also has an information page.
   - `simple_automation:crusher_blacklist` (items): ores the crusher leaves alone.
   - `simple_automation:farm_crops` (blocks): extra crops for the farm (harvested at max age, then replanted).
   - `simple_automation:farm_seeds` (items): extra seeds the farm sows on empty farmland (only when it can also harvest the plant they grow).
+  - `simple_automation:guard_blacklist` (entity types): mobs the guard post never attacks (the Warden by default; bosses from `c:bosses` are always skipped).
 
 ---
 

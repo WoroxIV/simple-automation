@@ -318,7 +318,12 @@ public final class MiscTests {
         });
     }
 
-    /** Un petit champignon carmin abattu, champignons carmin et poudre d'os au coffre : il est replanté puis regrandit. */
+    /**
+     * Un petit champignon carmin abattu, champignons carmin et poudre d'os au coffre : il est replanté puis regrandit.
+     * Si le nylium sous la tige est devenu du netherrack (tick aléatoire, règle vanilla), le champignon est replanté à
+     * côté : il peut alors pousser à travers le chapeau resté en l'air et ne plus former un arbre complet. On vérifie
+     * donc seulement qu'une tige a repoussé au sol quelque part dans la zone (ou qu'elle a déjà été abattue).
+     */
     public static void lumberBonemealsFungus(GameTestHelper h) {
         BlockPos chest = netherYard(h, new ItemStack(Items.CRIMSON_FUNGUS, 2));
         h.getBlockEntity(chest, ChestBlockEntity.class).setItem(1, new ItemStack(Items.BONE_MEAL, 32));
@@ -326,7 +331,8 @@ public final class MiscTests {
             h.assertTrue(count(h, chest, Items.BONE_MEAL) < 32, "no bone meal used: stump " + h.getBlockState(new BlockPos(3, 2, 3))
                     + ", stems " + count(h, chest, Items.CRIMSON_STEM) + ", fungi " + count(h, chest, Items.CRIMSON_FUNGUS)
                     + ", " + TestKit.describe(TestKit.zone(h, new BlockPos(6, 2, 6))));
-            h.assertTrue(count(h, chest, Items.CRIMSON_STEM) > 3 || h.getBlockState(new BlockPos(3, 2, 3)).is(Blocks.CRIMSON_STEM),
+            h.assertTrue(count(h, chest, Items.CRIMSON_STEM) > 3
+                            || TestKit.countBlocks(h, Blocks.CRIMSON_STEM, new BlockPos(1, 2, 1), new BlockPos(5, 2, 5)) > 0,
                     "the replanted fungus did not grow: " + h.getBlockState(new BlockPos(3, 2, 3)));
         });
     }

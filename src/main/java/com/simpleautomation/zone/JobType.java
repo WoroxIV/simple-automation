@@ -6,6 +6,7 @@ import com.simpleautomation.job.CrusherJob;
 import com.simpleautomation.job.FarmJob;
 import com.simpleautomation.job.FisheryJob;
 import com.simpleautomation.job.ForgeJob;
+import com.simpleautomation.job.GuardJob;
 import com.simpleautomation.job.Job;
 import com.simpleautomation.job.LumberJob;
 import com.simpleautomation.job.QuarryJob;
@@ -20,7 +21,8 @@ public enum JobType implements StringRepresentable {
     CRUSHER("crusher", CrusherJob::new),
     FARM("farm", FarmJob::new),
     BARN("barn", BarnJob::new),
-    FISHERY("fishery", FisheryJob::new);
+    FISHERY("fishery", FisheryJob::new),
+    GUARD("guard", GuardJob::new);
 
     public static final Codec<JobType> CODEC = StringRepresentable.fromEnum(JobType::values);
 
