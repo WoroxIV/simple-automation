@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.Blocks;
 public final class GuardTests {
     /**
      * Trois zombies, une vache et un zombie nommé dans la zone, un golem à l'épée en fer. Les trois zombies meurent ; la
-     * vache et le zombie nommé ne sont pas touchés. Chaque zombie tenait un lingot de fer (lâché à coup sûr) : 3 lingots
+     * vache et le zombie nommé ne sont pas touchés. Chaque zombie tenait un lingot de fer (lâché à coup sûr) : au moins 3 lingots (la table du zombie peut ajouter un lingot rare)
      * au coffre. L'XP (5 par zombie, plus 1 à 3 par objet équipé) n'existe que pour une mise à mort par un joueur : au
      * moins 15 points, dont un cristal, sans aucune orbe. L'épée (6 dégâts, 5,9 après l'armure d'un zombie) frappe
      * 4 fois chaque zombie de 20 PV : 12 points d'usure.
@@ -43,7 +43,7 @@ public final class GuardTests {
             int zombies = h.getEntities(EntityType.ZOMBIE).size();
             h.assertTrue(zombies == 1 && named.isAlive(), "expected only the named zombie left, got " + zombies + " zombie(s)");
             int ingots = TestKit.count(h, TestKit.CHEST, Items.IRON_INGOT);
-            h.assertTrue(ingots == 3, "expected 3 iron ingots in the chest, got " + ingots);
+            h.assertTrue(ingots >= 3, "expected at least 3 iron ingots in the chest, got " + ingots);
             int crystals = TestKit.count(h, TestKit.CHEST, ModItems.XP_CRYSTAL.get());
             double xp = be.xp().stored() + 10 * crystals;
             h.assertTrue(crystals >= 1 && xp >= 15, "expected at least 15 xp with a crystal, got " + xp + " (" + crystals + " crystals)");
