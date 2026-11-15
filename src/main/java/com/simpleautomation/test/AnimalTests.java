@@ -251,6 +251,32 @@ public final class AnimalTests {
         });
     }
 
+    /**
+     * Seuil de reproduction : neuf vaches (seuil 10), un golem au blé. Un couple amoureux compte déjà pour son veau à
+     * naître : un seul couple est nourri, il naît exactement un veau et le troupeau ne dépasse jamais 10.
+     */
+    public static void barnBreedCapCountsLovers(GameTestHelper h) {
+        fencedBarn(h);
+        h.getBlockEntity(new BlockPos(8, 2, 3), net.minecraft.world.level.block.entity.ChestBlockEntity.class).setItem(0, new ItemStack(Items.WHEAT, 32));
+        int n = 0;
+        for (int px = 1; px <= 5 && n < 9; px++)
+            for (int pz = 1; pz <= 5 && n < 9; pz += 2) {
+                if ((px == 1 && pz == 1) || (px == 5 && pz == 5)) continue; // bornes
+                h.spawn(EntityType.COW, new BlockPos(px, 2, pz));
+                n++;
+            }
+        golem(h, new BlockPos(3, 2, 2), Items.WHEAT);
+        h.onEachTick(() -> {
+            int cows = h.getEntities(EntityType.COW).size();
+            if (cows > 10) h.fail("the barn bred past its cap: " + cows + " cows");
+        });
+        h.runAfterDelay(800, () -> {
+            int cows = h.getEntities(EntityType.COW).size();
+            h.assertTrue(cows == 10, "expected exactly 10 cows, got " + cows);
+            h.succeed();
+        });
+    }
+
     private static void fence(GameTestHelper h, int x, int z) {
         BlockPos p = new BlockPos(x, 2, z);
         if (p.equals(TestKit.CONTROLLER)) return;

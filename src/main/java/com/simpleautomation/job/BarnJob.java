@@ -243,6 +243,12 @@ public final class BarnJob implements Job {
     private @Nullable Task breedTask(ZoneControllerBlockEntity zone, Worker worker, ServerLevel level, List<Animal> animals) {
         if (zone.inventory().count(s -> ItemStack.isSameItemSameComponents(s, worker.tool)) < 2) return null;
         Map<EntityType<?>, Integer> population = population(animals);
+        // Naissances à venir : un couple amoureux, ou réservé par un autre golem nourrisseur, compte déjà pour son petit.
+        Map<EntityType<?>, Integer> lovers = new HashMap<>();
+        for (Animal a : animals)
+            if (a.isInLove() || (claimed.contains(a.getUUID()) && a.isFood(worker.tool) && a.canFallInLove() && a.getAge() == 0))
+                lovers.merge(a.getType(), 1, Integer::sum);
+        lovers.forEach((type, n) -> population.merge(type, (n + 1) / 2, Integer::sum));
         int max = SAConfig.BARN_MAX_ANIMALS.getAsInt();
         Map<EntityType<?>, List<Animal>> ready = new HashMap<>();
         for (Animal a : animals) {

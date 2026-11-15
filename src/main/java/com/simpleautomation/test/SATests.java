@@ -119,6 +119,7 @@ public final class SATests {
         test("barn_brushes_armadillo", AnimalTests::barnBrushesArmadillo, 900);
         test("barn_collects_eggs", AnimalTests::barnCollectsEggs, 200);
         test("barn_cull_xp_to_crystals", AnimalTests::barnCullXpToCrystals, 1500);
+        test("barn_breed_cap_counts_lovers", AnimalTests::barnBreedCapCountsLovers, 1000);
         test("claims_quarry_break_denied", ClaimsTests::quarryBreakDenied, 900);
         test("claims_crusher_place_denied", ClaimsTests::crusherPlaceDenied, 900);
         test("claims_farm_sow_denied", ClaimsTests::farmSowDenied, 1600);
