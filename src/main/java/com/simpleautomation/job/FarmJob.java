@@ -29,7 +29,9 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.NetherWartBlock;
+import net.minecraft.world.level.block.PitcherCropBlock;
 import net.minecraft.world.level.block.StemBlock;
+import net.minecraft.world.level.block.TorchflowerCropBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
@@ -149,6 +151,7 @@ public final class FarmJob implements Job {
     }
 
     static boolean isRipe(ServerLevel level, BlockPos pos, BlockState state) {
+        if (neverHarvest(state)) return false;
         if (state.getBlock() instanceof CropBlock crop) return crop.isMaxAge(state);
         if (state.getBlock() instanceof NetherWartBlock) return state.getValue(NetherWartBlock.AGE) >= NetherWartBlock.MAX_AGE;
         if (state.getBlock() instanceof SweetBerryBushBlock) return state.getValue(SweetBerryBushBlock.AGE) >= SweetBerryBushBlock.MAX_AGE;
@@ -167,8 +170,19 @@ public final class FarmJob implements Job {
      * (voir {@link #cropOf}).
      */
     private static boolean isTagCrop(BlockState state) {
+        if (neverHarvest(state)) return false;
         if (state.is(ModTags.FARM_CROPS)) return true;
         return !(state.getBlock() instanceof DoublePlantBlock) && ageOf(state) != null && new ItemStack(state.getBlock().asItem()).is(ModTags.FARM_SEEDS);
+    }
+
+    /**
+     * Plantes qui ne se récoltent jamais, même mûres en apparence ou listées dans farm_crops : les tiges de melon et de
+     * citrouille (leur graine est dans c:seeds, et une tige à l'âge 7 passait pour mûre : on la cassait), la jeune
+     * plante de sarracénie et la pousse de torchiflamme (ce sont leurs fleurs qu'on veut, pas leur graine).
+     */
+    private static boolean neverHarvest(BlockState state) {
+        Block block = state.getBlock();
+        return isStem(state) || block instanceof PitcherCropBlock || block instanceof TorchflowerCropBlock;
     }
 
     /** La propriété « age » d'une culture moddée du tag farm_crops, si elle en a une. */

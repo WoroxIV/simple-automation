@@ -141,6 +141,7 @@ public final class SATests {
         test("forge_xp_to_bank", XpTests::forgeXpToBank, 1600);
         test("crusher_plain_pickaxe_bonus", CrusherTests::plainPickaxeBonus, 1800);
         test("crusher_ignores_silk_touch", CrusherTests::ignoresSilkTouch, 900);
+        test("farm_stems_stay_intact", FarmTests::stemsStayIntact, 400, NO_RANDOM_TICKS);
     }
 
     public static void register(IEventBus modBus) {
