@@ -73,7 +73,7 @@ public class ZoneControllerBlockEntity extends BlockEntity {
     public static final String BIRTH_KEY = "simple_automation.birth";
     /** Marque de naissance d'un golem d'avant la mise à jour passé dans une autre dimension : jamais tout juste construit. */
     private static final long UNKNOWN_BIRTH = Long.MIN_VALUE;
-    /** Délai entre deux vérifications de l'objet tenu quand il n'a pas changé (l'enclos dépend des animaux présents). */
+    /** Délai entre deux vérifications de l'objet tenu quand il n'a pas changé (l'étable dépend des animaux présents). */
     private static final int TOOL_CHECK_TICKS = 20;
     private static final int IDLE_RETRY_TICKS = 10;
     /** Après ce nombre de ticks sans tâche, un golem va se reposer à côté des autres. */
@@ -237,7 +237,7 @@ public class ZoneControllerBlockEntity extends BlockEntity {
 
     /**
      * Le métier accepte-t-il ce que tient le golem ? Réévalué tout de suite quand l'objet change (donné, repris, cassé),
-     * et sinon toutes les secondes tant que le golem ne travaille pas : le « ? » de l'enclos apparaît et disparaît
+     * et sinon toutes les secondes tant que le golem ne travaille pas : le « ? » de l'étable apparaît et disparaît
      * au gré des animaux de la zone, sans interrompre une tâche en cours.
      */
     private boolean toolAccepted(Worker w) {

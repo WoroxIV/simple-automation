@@ -6,8 +6,7 @@
     "simple_automation:forge_controller",
     "simple_automation:crusher_controller",
     "simple_automation:farm_controller",
-    "simple_automation:shepherd_controller",
-    "simple_automation:ranch_controller",
+    "simple_automation:barn_controller",
     "simple_automation:pipe"
   ]
 }

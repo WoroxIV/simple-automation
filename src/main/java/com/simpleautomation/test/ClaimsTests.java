@@ -30,7 +30,7 @@ public final class ClaimsTests {
     /** Interaction refusée : le mouton garde sa laine ; protection levée, il reste de côté un moment (pas de boucle dessus). */
     public static void shearDenied(GameTestHelper h) {
         AABB box = deny(h, TestClaims.DENY_INTERACT);
-        TestKit.floorAndZone(h, ModBlocks.SHEPHERD_CONTROLLER.get());
+        TestKit.floorAndZone(h, ModBlocks.BARN_CONTROLLER.get());
         Sheep sheep = h.spawn(EntityType.SHEEP, new BlockPos(3, 2, 4));
         sheep.setNoAi(true);
         golem(h, new BlockPos(2, 2, 2), Items.SHEARS);
@@ -50,9 +50,9 @@ public final class ClaimsTests {
     }
 
     /** Interaction refusée : les vaches ne tombent pas amoureuses et le blé reste au coffre, même une fois la protection levée. */
-    public static void ranchDenied(GameTestHelper h) {
+    public static void barnBreedDenied(GameTestHelper h) {
         AABB box = deny(h, TestClaims.DENY_INTERACT);
-        AnimalTests.fencedRanch(h);
+        AnimalTests.fencedBarn(h);
         BlockPos chest = new BlockPos(8, 2, 3);
         TestKit.chest(h, chest).setItem(0, new ItemStack(Items.WHEAT, 8));
         Cow a = h.spawn(EntityType.COW, new BlockPos(2, 2, 3));
@@ -159,7 +159,7 @@ public final class ClaimsTests {
      * refusé par une protection qui voit le bloc demandé ; interaction permise puis refusée.
      */
     public static void rules(GameTestHelper h) {
-        TestKit.floorAndZone(h, ModBlocks.RANCH_CONTROLLER.get());
+        TestKit.floorAndZone(h, ModBlocks.BARN_CONTROLLER.get());
         Cow cow = h.spawn(EntityType.COW, new BlockPos(3, 2, 3));
         cow.setNoAi(true);
 

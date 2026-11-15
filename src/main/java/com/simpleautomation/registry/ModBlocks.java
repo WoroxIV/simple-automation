@@ -22,8 +22,7 @@ public final class ModBlocks {
     public static final DeferredBlock<ZoneControllerBlock> FORGE_CONTROLLER = controller("forge_controller", JobType.FORGE);
     public static final DeferredBlock<ZoneControllerBlock> CRUSHER_CONTROLLER = controller("crusher_controller", JobType.CRUSHER);
     public static final DeferredBlock<ZoneControllerBlock> FARM_CONTROLLER = controller("farm_controller", JobType.FARM);
-    public static final DeferredBlock<ZoneControllerBlock> SHEPHERD_CONTROLLER = controller("shepherd_controller", JobType.SHEPHERD);
-    public static final DeferredBlock<ZoneControllerBlock> RANCH_CONTROLLER = controller("ranch_controller", JobType.RANCH);
+    public static final DeferredBlock<ZoneControllerBlock> BARN_CONTROLLER = controller("barn_controller", JobType.BARN);
 
     public static final DeferredBlock<PipeBlock> PIPE = BLOCKS.registerBlock("pipe", PipeBlock::new,
             p -> p.mapColor(MapColor.COLOR_ORANGE).strength(0.8F).sound(SoundType.COPPER).noOcclusion());

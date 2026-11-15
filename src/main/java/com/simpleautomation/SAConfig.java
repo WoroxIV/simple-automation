@@ -15,7 +15,7 @@ public final class SAConfig {
     public static final ModConfigSpec.DoubleValue CRUSHER_MULTIPLIER;
     public static final ModConfigSpec.IntValue LUMBER_FALLBACK_SECONDS;
     public static final ModConfigSpec.BooleanValue LUMBER_WAIT_FOR_SAPLINGS;
-    public static final ModConfigSpec.IntValue RANCH_MAX_ANIMALS;
+    public static final ModConfigSpec.IntValue BARN_MAX_ANIMALS;
     public static final ModConfigSpec.IntValue PIPE_ITEMS_PER_OPERATION;
     public static final ModConfigSpec.IntValue PIPE_TICKS_PER_OPERATION;
 
@@ -44,8 +44,8 @@ public final class SAConfig {
                 .defineInRange("lumberFallbackSeconds", 60, 0, 3600);
         LUMBER_WAIT_FOR_SAPLINGS = b.comment("When a felled tree is waiting for saplings, lumber golems stop felling new trees until it is replanted (false = keep cutting, the spot is replanted as soon as saplings arrive).")
                 .define("lumberWaitForSaplings", false);
-        RANCH_MAX_ANIMALS = b.comment("A ranch breeds each species up to this many animals, and golems with a sword cull the adults above it.")
-                .defineInRange("ranchMaxAnimals", 10, 2, 256);
+        BARN_MAX_ANIMALS = b.comment("A barn breeds each species up to this many animals (babies included), and golems with a weapon cull the adults above it.")
+                .defineInRange("barnMaxAnimals", 10, 2, 256);
         PIPE_ITEMS_PER_OPERATION = b.comment("Items an extracting pipe connection moves at once.")
                 .defineInRange("pipeItemsPerOperation", 64, 1, 4096);
         PIPE_TICKS_PER_OPERATION = b.comment("Ticks between two moves of an extracting pipe connection.")

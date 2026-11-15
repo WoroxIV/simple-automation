@@ -1,6 +1,0 @@
-{ "variants": {
-  "status=invalid": { "model": "simple_automation:block/shepherd_controller" },
-  "status=idle":    { "model": "simple_automation:block/shepherd_controller" },
-  "status=paused":  { "model": "simple_automation:block/shepherd_controller" },
-  "status=working": { "model": "simple_automation:block/shepherd_controller_on" }
-} }

@@ -1,6 +1,6 @@
 # Simple Automation
 
-**Put your copper golems to work.** Mark out a zone, drop a job controller in it, and every copper golem inside starts digging, chopping, smelting, farming or ranching for you. No power, no machines to upgrade: the tool you hand a golem decides how well it works.
+**Put your copper golems to work.** Mark out a zone, drop a job controller in it, and every copper golem inside starts digging, chopping, smelting, farming or tending animals for you. No power, no machines to upgrade: the tool you hand a golem decides how well it works.
 
 Made for NeoForge 1.21.11. Works in survival from the start: everything is crafted from copper, a chest and a bit of redstone.
 
@@ -31,7 +31,7 @@ A golem holding something useless for its job shows a **"?"** above its head.
 
 ---
 
-## The seven jobs
+## The six jobs
 
 | Controller | Golem holds | What happens |
 |---|---|---|
@@ -40,12 +40,11 @@ A golem holding something useless for its job shows a **"?"** above its head.
 | **Forge** | nothing or a shovel | Tends every furnace, blast furnace and smoker in the zone: shares the input and fuel fairly between them, gives each one only the fuel it needs, and empties the results. With a shovel, golems stoke the fire so furnaces cook faster. |
 | **Crusher** | pickaxe | Takes ore blocks from the chest, places them in the zone and mines them for 50% more loot than the same pickaxe would give. Fortune counts, Silk Touch is ignored: mine ores with Silk Touch, crush them with Fortune III. |
 | **Farm** | nothing or a hoe | Harvests ripe crops and replants them, sows seeds from the chest on empty farmland, picks sweet berries and ripe cocoa (up to 12 blocks up jungle trunks). Pumpkin and melon stems keep a free spot for their fruit. |
-| **Sheepfold** | shears | Shears every sheep and other shearable animal in the zone (modded ones too). Careful: a sheared mooshroom becomes a cow, like with a player. |
-| **Ranch** | animal food or a weapon | With food, breeds the animals that eat it (food taken from the chest), up to a limit per species (10 by default). With a sword, an axe, a mace or a trident, culls the extra adults above that limit. |
+| **Barn** | animal food, shears, a bucket, a brush or a weapon | Food: breeds the animals that eat it (food taken from the chest), up to a limit per species (10 by default, babies included). Shears: shears sheep, mooshrooms and other shearable animals (modded ones too; a sheared mooshroom becomes a cow, like with a player). Bucket: milks cows, mooshrooms and goats into empty buckets from the chest. Brush: brushes armadillos for scutes. Sword, axe, mace or trident: culls the extra adults above the limit (never babies, named, leashed or tamed animals). Eggs and drops lying in the zone go to the chest, and experience comes out as crystals. |
 
 Tips:
 - **Quarry:** golems place cobblestone under themselves over caves, lava and water, and seal lava next to the blocks they dig. Put cobblestone in the chest; if there is none they still place it. The quarry waits on the stone layer until someone has a pickaxe.
-- **Sheepfold and Ranch:** fence the zone in. The controller warns you when animals wander out.
+- **Barn:** fence the zone in. The controller warns you when animals wander out.
 - **Crusher:** leave some free cells with a solid floor inside the zone, at the markers' height: that is where golems set the ores down.
 
 ---
@@ -84,8 +83,7 @@ All controllers use the same shape: copper ingots around, a **chest** in the mid
 | Forge | furnace |
 | Crusher | grindstone |
 | Farm | iron hoe |
-| Sheepfold | shears |
-| Ranch | lead |
+| Barn | hay bale |
 
 - Border Marker ×2: lightning rod + redstone (shapeless)
 - Copper Pipe ×8: copper ingot, glass, copper ingot
@@ -115,7 +113,7 @@ With JEI installed, every block and item also has an information page.
 - Golems inside a zone are **not entities**: the controller simulates them and clients only draw them. Fifty golems cost about as much as one block entity.
 - A **global block budget** caps how many blocks all golems of the server break per tick. Work slows down instead of lagging.
 - When the chests are full the zone **pauses**: nothing is dropped on the ground.
-- Everything is configurable in `simple_automation-server.toml` (world `serverconfig` folder): zone size, golems per zone, block budget, work speed, walk speed, crusher bonus, ranch limit, pipe speed.
+- Everything is configurable in `simple_automation-server.toml` (world `serverconfig` folder): zone size, golems per zone, block budget, work speed, walk speed, crusher bonus, barn animal limit, pipe speed.
 
 ---
 

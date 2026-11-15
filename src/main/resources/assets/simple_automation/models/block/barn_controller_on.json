@@ -1,4 +1,4 @@
 { "parent": "minecraft:block/cube_bottom_top", "textures": {
-  "side": "simple_automation:block/ranch_controller_side",
+  "side": "simple_automation:block/barn_controller_side",
   "top": "simple_automation:block/controller_top_on",
   "bottom": "minecraft:block/cut_copper" } }

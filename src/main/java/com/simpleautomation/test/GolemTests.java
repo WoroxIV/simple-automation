@@ -286,10 +286,12 @@ public final class GolemTests {
 
     /**
      * L'objet tenu est réévalué dès qu'il change, même sans passer par un joueur : des cisailles qui cassent (pile vidée sur place)
-     * ou un bâton à leur place mettent le golem de la bergerie en « ? » au tick suivant ; de nouvelles cisailles l'en sortent.
+     * ou un bâton à leur place mettent le golem de l'étable en « ? » au tick suivant ; de nouvelles cisailles l'en sortent.
+     * Une vache dans la zone : sans animal, l'étable accepte n'importe quel objet en attendant le troupeau.
      */
     public static void toolChangeRechecked(GameTestHelper h) {
-        floorAndZone(h, ModBlocks.SHEPHERD_CONTROLLER.get());
+        floorAndZone(h, ModBlocks.BARN_CONTROLLER.get());
+        h.spawn(EntityType.COW, new BlockPos(2, 2, 4)).setNoAi(true);
         CopperGolem golem = h.spawn(EntityType.COPPER_GOLEM, new BlockPos(3, 2, 3));
         golem.setNoAi(true);
         golem.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.SHEARS));
@@ -299,7 +301,7 @@ public final class GolemTests {
                 .thenIdle(30)
                 .thenExecute(() -> {
                     Worker w = zone(h, TestKit.CONTROLLER).workers().getFirst();
-                    h.assertTrue(w.status == Worker.Status.IDLE, "a shepherd with shears is " + w.status);
+                    h.assertTrue(w.status == Worker.Status.IDLE, "a barn golem with shears is " + w.status);
                     w.tool.shrink(1); // cassées sur place : la même pile, vidée
                 })
                 .thenExecuteAfter(2, () -> {

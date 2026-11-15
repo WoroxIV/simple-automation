@@ -19,7 +19,7 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ZoneControllerBlockEntity>> ZONE_CONTROLLER = BLOCK_ENTITIES.register("zone_controller",
             () -> new BlockEntityType<>(ZoneControllerBlockEntity::new, Set.of(ModBlocks.QUARRY_CONTROLLER.get(), ModBlocks.LUMBER_CONTROLLER.get(),
                     ModBlocks.FORGE_CONTROLLER.get(), ModBlocks.CRUSHER_CONTROLLER.get(), ModBlocks.FARM_CONTROLLER.get(),
-                    ModBlocks.SHEPHERD_CONTROLLER.get(), ModBlocks.RANCH_CONTROLLER.get())));
+                    ModBlocks.BARN_CONTROLLER.get())));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PipeBlockEntity>> PIPE = BLOCK_ENTITIES.register("pipe",
             () -> new BlockEntityType<>(PipeBlockEntity::new, Set.of(ModBlocks.PIPE.get())));

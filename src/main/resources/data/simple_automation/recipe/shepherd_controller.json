@@ -1,3 +1,0 @@
-{ "type": "minecraft:crafting_shaped", "category": "redstone", "pattern": [ "CTC", "CHC", "CRC" ],
-  "key": { "C": "minecraft:copper_ingot", "T": "minecraft:shears", "H": "minecraft:chest", "R": "minecraft:redstone" },
-  "result": { "id": "simple_automation:shepherd_controller" } }

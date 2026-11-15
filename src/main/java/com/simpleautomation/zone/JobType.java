@@ -1,10 +1,9 @@
 package com.simpleautomation.zone;
 
 import com.mojang.serialization.Codec;
+import com.simpleautomation.job.BarnJob;
 import com.simpleautomation.job.CrusherJob;
 import com.simpleautomation.job.FarmJob;
-import com.simpleautomation.job.RanchJob;
-import com.simpleautomation.job.ShearJob;
 import com.simpleautomation.job.ForgeJob;
 import com.simpleautomation.job.Job;
 import com.simpleautomation.job.LumberJob;
@@ -19,8 +18,7 @@ public enum JobType implements StringRepresentable {
     FORGE("forge", ForgeJob::new),
     CRUSHER("crusher", CrusherJob::new),
     FARM("farm", FarmJob::new),
-    SHEPHERD("shepherd", ShearJob::new),
-    RANCH("ranch", RanchJob::new);
+    BARN("barn", BarnJob::new);
 
     public static final Codec<JobType> CODEC = StringRepresentable.fromEnum(JobType::values);
 

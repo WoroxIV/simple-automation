@@ -19,7 +19,7 @@ public interface Job {
     boolean acceptsTool(ItemStack tool);
 
     /**
-     * Comme {@link #acceptsTool(ItemStack)}, en connaissant la zone (l'enclos regarde si un animal présent mange l'objet).
+     * Comme {@link #acceptsTool(ItemStack)}, en connaissant la zone (l'étable regarde si un animal présent mange l'objet).
      * C'est celle-ci que le contrôleur appelle : à l'arrivée d'un objet, puis régulièrement tant que le golem ne travaille pas.
      */
     default boolean acceptsTool(ZoneControllerBlockEntity zone, ItemStack tool) {

@@ -65,9 +65,9 @@ public final class SATests {
         test("forge_smelts_with_stoking", SATests::forgeSmeltsWithStoking, 1500);
         test("crusher_fortune_multiplies", SATests::crusherFortuneMultiplies, 1800);
         test("farm_harvests_and_replants", SATests::farmHarvestsAndReplants, 600);
-        test("shepherd_shears_sheep", SATests::shepherdShearsSheep, 600);
-        test("ranch_breeds", SATests::ranchBreeds, 900);
-        test("ranch_culls_extra_adults", SATests::ranchCulls, 900);
+        test("barn_shears_sheep", SATests::barnShearsSheep, 600);
+        test("barn_breeds", SATests::barnBreeds, 900);
+        test("barn_culls_extra_adults", SATests::barnCulls, 900);
         test("lightning_deoxidizes_workers", SATests::lightningDeoxidizes, 200);
         // Itération 2
         test("recruit_after_controller_replaced", FrameworkTests::recruitAfterControllerReplaced, 400);
@@ -80,7 +80,7 @@ public final class SATests {
         test("pipe_filter_tag", FilterTests::pipeFilterTag, 200);
         test("farm_plants_seeds_from_chest", MiscTests::farmPlantsSeedsFromChest, 1200);
         test("lumber_fells_mangrove", MiscTests::lumberFellsMangrove, 900);
-        test("ranch_breeds_split_stacks", MiscTests::ranchBreedsSplitStacks, 900);
+        test("barn_breeds_split_stacks", MiscTests::barnBreedsSplitStacks, 900);
         // Itération 2, corrections de revue
         test("quarry_waits_for_pickaxe", QuarryTests::waitsForPickaxe, 1500);
         test("farm_sows_pumpkin_seeds", MiscTests::farmSowsPumpkinSeeds, 1200);
@@ -110,11 +110,15 @@ public final class SATests {
         test("worker_wax_scrape_and_tool", GolemTests::waxScrapeAndTool, 300);
         test("zone_pauses_when_chests_full", GolemTests::pausesWhenChestsFull, 900);
         test("break_drops_without_block_drops", GolemTests::breakDropsWithoutBlockDrops, 200, NO_BLOCK_DROPS);
-        test("ranch_food_check", AnimalTests::ranchFoodCheck, 600);
-        test("ranch_fence_hint", AnimalTests::ranchFenceHint, 200);
+        test("barn_food_check", AnimalTests::barnFoodCheck, 600);
+        test("barn_fence_hint", AnimalTests::barnFenceHint, 200);
         test("shear_efficiency_and_wear", AnimalTests::shearEfficiencyAndWear, 600);
         test("claims_shear_denied", ClaimsTests::shearDenied, 300);
-        test("claims_ranch_denied", ClaimsTests::ranchDenied, 400);
+        test("claims_barn_breed_denied", ClaimsTests::barnBreedDenied, 400);
+        test("barn_milks", AnimalTests::barnMilks, 900);
+        test("barn_brushes_armadillo", AnimalTests::barnBrushesArmadillo, 900);
+        test("barn_collects_eggs", AnimalTests::barnCollectsEggs, 200);
+        test("barn_cull_xp_to_crystals", AnimalTests::barnCullXpToCrystals, 1500);
         test("claims_quarry_break_denied", ClaimsTests::quarryBreakDenied, 900);
         test("claims_crusher_place_denied", ClaimsTests::crusherPlaceDenied, 900);
         test("claims_farm_sow_denied", ClaimsTests::farmSowDenied, 1600);
@@ -302,9 +306,9 @@ public final class SATests {
         });
     }
 
-    /** Deux moutons immobiles, un golem aux cisailles : la laine doit finir au coffre. */
-    private static void shepherdShearsSheep(GameTestHelper h) {
-        floorAndZone(h, ModBlocks.SHEPHERD_CONTROLLER.get());
+    /** Étable : deux moutons immobiles, un golem aux cisailles : la laine doit finir au coffre. */
+    private static void barnShearsSheep(GameTestHelper h) {
+        floorAndZone(h, ModBlocks.BARN_CONTROLLER.get());
         for (int i = 0; i < 2; i++) {
             var sheep = h.spawn(EntityType.SHEEP, new BlockPos(2 + i * 2, 2, 4));
             sheep.setNoAi(true);
@@ -318,20 +322,29 @@ public final class SATests {
         });
     }
 
-    /** Deux vaches dans un enclos fermé, du blé au coffre, un golem qui tient du blé : un veau doit naître. */
-    private static void ranchBreeds(GameTestHelper h) {
-        fencedRanch(h);
+    /**
+     * Étable : deux vaches dans un enclos fermé, du blé au coffre, un golem qui tient du blé : un veau doit naître.
+     * L'orbe de reproduction (1 à 7 XP, créée par la vanilla) est aspirée vers le tampon de la zone.
+     */
+    private static void barnBreeds(GameTestHelper h) {
+        fencedBarn(h);
         h.getBlockEntity(new BlockPos(8, 2, 3), ChestBlockEntity.class).setItem(0, new ItemStack(Items.WHEAT, 8));
         h.spawn(EntityType.COW, new BlockPos(2, 2, 3));
         h.spawn(EntityType.COW, new BlockPos(4, 2, 3));
         CopperGolem golem = h.spawn(EntityType.COPPER_GOLEM, new BlockPos(3, 2, 2));
         golem.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WHEAT));
-        h.succeedWhen(() -> h.assertTrue(h.getEntities(EntityType.COW).size() >= 3, "no calf yet: " + h.getEntities(EntityType.COW).size() + " cows"));
+        h.succeedWhen(() -> {
+            h.assertTrue(h.getEntities(EntityType.COW).size() >= 3, "no calf yet: " + h.getEntities(EntityType.COW).size() + " cows");
+            var be = h.getBlockEntity(new BlockPos(7, 2, 3), com.simpleautomation.zone.ZoneControllerBlockEntity.class);
+            double xp = be.xp().stored() + 10 * count(h, new BlockPos(8, 2, 3), com.simpleautomation.registry.ModItems.XP_CRYSTAL.get());
+            h.assertTrue(xp >= 1, "the breeding orb did not reach the zone");
+            h.assertTrue(h.getEntities(EntityType.EXPERIENCE_ORB).isEmpty(), "a breeding orb is still lying around");
+        });
     }
 
-    /** Douze poules (seuil 10), un golem à l'épée : il doit en rester exactement 10. */
-    private static void ranchCulls(GameTestHelper h) {
-        fencedRanch(h);
+    /** Étable : douze poules (seuil 10), un golem à l'épée : il doit en rester exactement 10. */
+    private static void barnCulls(GameTestHelper h) {
+        fencedBarn(h);
         for (int i = 0; i < 12; i++) h.spawn(EntityType.CHICKEN, new BlockPos(2 + i % 3, 2, 2 + i / 4));
         CopperGolem golem = h.spawn(EntityType.COPPER_GOLEM, new BlockPos(3, 2, 3));
         golem.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_SWORD));
@@ -365,8 +378,8 @@ public final class SATests {
         });
     }
 
-    /** Enclos clôturé : bornes (1,2,1)–(5,2,5), clôture tout autour, contrôleur en (7,2,3), coffre en (8,2,3). */
-    private static void fencedRanch(GameTestHelper h) {
+    /** Étable clôturée : bornes (1,2,1)–(5,2,5), clôture tout autour, contrôleur en (7,2,3), coffre en (8,2,3). */
+    private static void fencedBarn(GameTestHelper h) {
         for (int x = 0; x <= 8; x++)
             for (int z = 0; z <= 6; z++) h.setBlock(x, 1, z, Blocks.GRASS_BLOCK);
         for (int i = 0; i <= 6; i++) {
@@ -377,7 +390,7 @@ public final class SATests {
         }
         h.setBlock(1, 2, 1, ModBlocks.BORDER_MARKER.get());
         h.setBlock(5, 2, 5, ModBlocks.BORDER_MARKER.get());
-        h.setBlock(7, 2, 3, ModBlocks.RANCH_CONTROLLER.get());
+        h.setBlock(7, 2, 3, ModBlocks.BARN_CONTROLLER.get());
         h.setBlock(8, 2, 3, Blocks.CHEST);
     }
 

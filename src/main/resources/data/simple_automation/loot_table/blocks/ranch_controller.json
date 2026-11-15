@@ -1,1 +1,0 @@
-{ "type": "minecraft:block", "pools": [ { "rolls": 1, "entries": [ { "type": "minecraft:item", "name": "simple_automation:ranch_controller" } ], "conditions": [ { "condition": "minecraft:survives_explosion" } ] } ], "random_sequence": "simple_automation:blocks/ranch_controller" }

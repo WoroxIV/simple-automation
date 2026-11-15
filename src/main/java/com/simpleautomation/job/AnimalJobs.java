@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
-/** Petits outils communs à la bergerie et à l'enclos. */
+/** Petits outils des métiers animaliers (l'étable). */
 final class AnimalJobs {
     /** Distance autour de la zone où l'on cherche des animaux sortis, pour l'astuce « clôture ». */
     private static final int STRAY_RANGE = 8;
@@ -84,10 +84,16 @@ final class AnimalJobs {
         return new AABB(b.minX(), b.markerY() - 3, b.minZ(), b.maxX() + 1, b.markerY() + 6, b.maxZ() + 1);
     }
 
-    /** Ramasse la laine, la viande… tombées dans la zone, et un peu autour (un item lâché au bord peut rebondir dehors). */
+    /**
+     * Ramasse la laine, la viande, les œufs, les écailles… tombés dans la zone, et un peu autour (un item lâché au bord peut
+     * rebondir dehors), ainsi que les orbes de reproduction, que la vanilla crée directement : elles vont au tampon d'XP.
+     */
     static void collectItems(ZoneControllerBlockEntity zone) {
         AABB box = box(zone);
-        if (box != null && zone.getLevel() != null && zone.getLevel().getGameTime() % 40 == 0) GolemTools.collectItems(zone, box.inflate(2, 0, 2));
+        if (box == null || zone.getLevel() == null || zone.getLevel().getGameTime() % 40 != 0) return;
+        AABB around = box.inflate(2, 0, 2);
+        GolemTools.collectItems(zone, around);
+        GolemTools.collectXp(zone, around);
     }
 
     /** Une case libre (avec un sol) à côté de l'animal, pour que la marionnette se tienne près de lui. */

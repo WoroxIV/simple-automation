@@ -1,6 +1,0 @@
-{ "variants": {
-  "status=invalid": { "model": "simple_automation:block/ranch_controller" },
-  "status=idle":    { "model": "simple_automation:block/ranch_controller" },
-  "status=paused":  { "model": "simple_automation:block/ranch_controller" },
-  "status=working": { "model": "simple_automation:block/ranch_controller_on" }
-} }

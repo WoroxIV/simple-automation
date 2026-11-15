@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 
-/** Tests de la ferme, de la scierie et de l'enclos (itération 2). Enregistrés depuis {@link SATests}. */
+/** Tests de la ferme, de la scierie et de l'étable (itération 2). Enregistrés depuis {@link SATests}. */
 public final class MiscTests {
 
     /** 25 cases de terre labourée vide, 30 graines de blé au coffre : tout est semé, et il reste exactement 5 graines. */
@@ -97,7 +97,7 @@ public final class MiscTests {
     }
 
     /** Deux vaches, le blé du coffre réparti en deux piles d'un seul : elles doivent quand même se reproduire, et les deux blés partir. */
-    public static void ranchBreedsSplitStacks(GameTestHelper h) {
+    public static void barnBreedsSplitStacks(GameTestHelper h) {
         for (int x = 0; x <= 8; x++)
             for (int z = 0; z <= 6; z++) h.setBlock(x, 1, z, Blocks.GRASS_BLOCK);
         for (int i = 0; i <= 6; i++) {
@@ -108,7 +108,7 @@ public final class MiscTests {
         }
         h.setBlock(1, 2, 1, ModBlocks.BORDER_MARKER.get());
         h.setBlock(5, 2, 5, ModBlocks.BORDER_MARKER.get());
-        h.setBlock(7, 2, 3, ModBlocks.RANCH_CONTROLLER.get());
+        h.setBlock(7, 2, 3, ModBlocks.BARN_CONTROLLER.get());
         h.setBlock(8, 2, 3, Blocks.CHEST);
         ChestBlockEntity chest = h.getBlockEntity(new BlockPos(8, 2, 3), ChestBlockEntity.class);
         chest.setItem(0, new ItemStack(Items.WHEAT, 1));

@@ -24,8 +24,7 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> FORGE_CONTROLLER = ITEMS.registerSimpleBlockItem("forge_controller", ModBlocks.FORGE_CONTROLLER);
     public static final DeferredItem<BlockItem> CRUSHER_CONTROLLER = ITEMS.registerSimpleBlockItem("crusher_controller", ModBlocks.CRUSHER_CONTROLLER);
     public static final DeferredItem<BlockItem> FARM_CONTROLLER = ITEMS.registerSimpleBlockItem("farm_controller", ModBlocks.FARM_CONTROLLER);
-    public static final DeferredItem<BlockItem> SHEPHERD_CONTROLLER = ITEMS.registerSimpleBlockItem("shepherd_controller", ModBlocks.SHEPHERD_CONTROLLER);
-    public static final DeferredItem<BlockItem> RANCH_CONTROLLER = ITEMS.registerSimpleBlockItem("ranch_controller", ModBlocks.RANCH_CONTROLLER);
+    public static final DeferredItem<BlockItem> BARN_CONTROLLER = ITEMS.registerSimpleBlockItem("barn_controller", ModBlocks.BARN_CONTROLLER);
     public static final DeferredItem<BlockItem> PIPE = ITEMS.registerSimpleBlockItem("pipe", ModBlocks.PIPE);
     public static final DeferredItem<WrenchItem> WRENCH = ITEMS.registerItem("wrench", WrenchItem::new, p -> p.stacksTo(1));
     public static final DeferredItem<FilterItem> FILTER = ITEMS.registerItem("filter", FilterItem::new, p -> p.stacksTo(1));
@@ -42,8 +41,7 @@ public final class ModItems {
                 out.accept(FORGE_CONTROLLER.get());
                 out.accept(CRUSHER_CONTROLLER.get());
                 out.accept(FARM_CONTROLLER.get());
-                out.accept(SHEPHERD_CONTROLLER.get());
-                out.accept(RANCH_CONTROLLER.get());
+                out.accept(BARN_CONTROLLER.get());
                 out.accept(PIPE.get());
                 out.accept(WRENCH.get());
                 out.accept(FILTER.get());
