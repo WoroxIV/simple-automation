@@ -23,6 +23,7 @@ public final class SimpleAutomationClient {
     public SimpleAutomationClient(IEventBus modBus) {
         PuppetBridge.HOLDER.set(new PuppetManager());
         modBus.addListener((RegisterMenuScreensEvent e) -> e.register(ModMenus.FILTER.get(), FilterScreen::new));
+        modBus.addListener((RegisterMenuScreensEvent e) -> e.register(ModMenus.RECIPE_CARD.get(), RecipeCardScreen::new));
         modBus.addListener((EntityRenderersEvent.RegisterRenderers e) -> e.registerBlockEntityRenderer(ModBlockEntities.PIPE.get(), PipeFilterRenderer::new));
         NeoForge.EVENT_BUS.addListener(SimpleAutomationClient::onInteract);
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> PuppetManager.clear());

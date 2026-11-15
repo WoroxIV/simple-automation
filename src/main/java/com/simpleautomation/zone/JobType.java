@@ -11,6 +11,7 @@ import com.simpleautomation.job.GuardJob;
 import com.simpleautomation.job.Job;
 import com.simpleautomation.job.LumberJob;
 import com.simpleautomation.job.QuarryJob;
+import com.simpleautomation.job.WorkshopJob;
 import java.util.function.Supplier;
 import net.minecraft.util.StringRepresentable;
 
@@ -24,7 +25,8 @@ public enum JobType implements StringRepresentable {
     BARN("barn", BarnJob::new),
     FISHERY("fishery", FisheryJob::new),
     GUARD("guard", GuardJob::new),
-    ENCHANTER("enchanter", EnchanterJob::new);
+    ENCHANTER("enchanter", EnchanterJob::new),
+    WORKSHOP("workshop", WorkshopJob::new);
 
     public static final Codec<JobType> CODEC = StringRepresentable.fromEnum(JobType::values);
 

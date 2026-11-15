@@ -14,6 +14,7 @@ public final class CompatNetwork {
     @SubscribeEvent
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
         event.registrar("1").playToServer(FilterGhostPayload.TYPE, FilterGhostPayload.STREAM_CODEC, FilterGhostPayload::handle);
+        event.registrar("1").playToServer(RecipeGhostPayload.TYPE, RecipeGhostPayload.STREAM_CODEC, RecipeGhostPayload::handle);
     }
 
     private CompatNetwork() {

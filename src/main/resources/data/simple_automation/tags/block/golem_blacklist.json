@@ -10,6 +10,7 @@
     "simple_automation:fishery_controller",
     "simple_automation:guard_controller",
     "simple_automation:enchanter_controller",
+    "simple_automation:workshop_controller",
     "simple_automation:pipe"
   ]
 }

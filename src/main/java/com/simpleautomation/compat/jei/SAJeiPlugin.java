@@ -2,6 +2,7 @@ package com.simpleautomation.compat.jei;
 
 import com.simpleautomation.SimpleAutomation;
 import com.simpleautomation.client.FilterScreen;
+import com.simpleautomation.client.RecipeCardScreen;
 import com.simpleautomation.registry.ModItems;
 import com.simpleautomation.zone.ZoneControllerBlock;
 import mezz.jei.api.IModPlugin;
@@ -45,5 +46,6 @@ public final class SAJeiPlugin implements IModPlugin {
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
         registration.addGhostIngredientHandler(FilterScreen.class, new FilterGhostHandler());
+        registration.addGhostIngredientHandler(RecipeCardScreen.class, new RecipeGhostHandler());
     }
 }

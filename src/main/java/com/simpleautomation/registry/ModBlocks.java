@@ -27,6 +27,8 @@ public final class ModBlocks {
     public static final DeferredBlock<ZoneControllerBlock> GUARD_CONTROLLER = controller("guard_controller", JobType.GUARD);
     public static final DeferredBlock<ZoneControllerBlock> ENCHANTER_CONTROLLER = controller("enchanter_controller", JobType.ENCHANTER);
 
+    public static final DeferredBlock<ZoneControllerBlock> WORKSHOP_CONTROLLER = controller("workshop_controller", JobType.WORKSHOP);
+
     public static final DeferredBlock<PipeBlock> PIPE = BLOCKS.registerBlock("pipe", PipeBlock::new,
             p -> p.mapColor(MapColor.COLOR_ORANGE).strength(0.8F).sound(SoundType.COPPER).noOcclusion());
 

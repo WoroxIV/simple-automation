@@ -53,6 +53,19 @@ public final class ZoneInventory {
         return ItemStack.EMPTY;
     }
 
+    /** Copie de toutes les piles (tampon puis coffres), pour qu'un métier choisisse parmi ce qui est là sans rien retirer. */
+    public List<ItemStack> stacks() {
+        List<ItemStack> all = new ArrayList<>();
+        for (ItemStack s : buffer) if (!s.isEmpty()) all.add(s.copy());
+        for (ResourceHandler<ItemResource> h : handlers()) {
+            for (int i = 0; i < h.size(); i++) {
+                ItemResource r = h.getResource(i);
+                if (!r.isEmpty()) all.add(r.toStack(h.getAmountAsInt(i)));
+            }
+        }
+        return all;
+    }
+
     /** Nombre total d'items qui passent le filtre, toutes piles de tous les coffres confondues. */
     public int count(Predicate<ItemStack> filter) {
         int total = 0;

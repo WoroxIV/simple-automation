@@ -160,6 +160,15 @@ public final class SATests {
         test("enchanter_only_plain_items", EnchanterTests::enchantsOnlyPlainItems, 1200);
         test("enchanter_not_enough_xp", EnchanterTests::notEnoughXpSpendsNothing, 500);
         test("enchanter_no_table", EnchanterTests::noTableIsReported, 600);
+        test("workshop_card_menus", WorkshopTests::cardMenusServerSide, 200);
+        test("workshop_card_configured_on_station", WorkshopTests::cardConfiguredOnStation, 200);
+        test("workshop_crafts_sticks", WorkshopTests::craftsSticks, 600);
+        test("workshop_crafting_leftovers", WorkshopTests::craftingLeftovers, 800);
+        test("workshop_smiths_netherite_sword", WorkshopTests::smithsNetheriteSword, 800);
+        test("workshop_stonecuts_slabs", WorkshopTests::stonecutsSlabs, 900);
+        test("workshop_brews_awkward", WorkshopTests::brewsAwkward, 1500);
+        test("workshop_brewing_chain", WorkshopTests::brewingChain, 3000);
+        test("workshop_missing_station_and_material", WorkshopTests::missingStationAndMaterial, 1200);
     }
 
     public static void register(IEventBus modBus) {

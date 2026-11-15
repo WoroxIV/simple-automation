@@ -4,6 +4,7 @@ import com.simpleautomation.SimpleAutomation;
 import com.simpleautomation.item.XpCrystalItem;
 import com.simpleautomation.pipe.WrenchItem;
 import com.simpleautomation.pipe.filter.FilterItem;
+import com.simpleautomation.workshop.RecipeCardItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
@@ -28,9 +29,11 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> FISHERY_CONTROLLER = ITEMS.registerSimpleBlockItem("fishery_controller", ModBlocks.FISHERY_CONTROLLER);
     public static final DeferredItem<BlockItem> GUARD_CONTROLLER = ITEMS.registerSimpleBlockItem("guard_controller", ModBlocks.GUARD_CONTROLLER);
     public static final DeferredItem<BlockItem> ENCHANTER_CONTROLLER = ITEMS.registerSimpleBlockItem("enchanter_controller", ModBlocks.ENCHANTER_CONTROLLER);
+    public static final DeferredItem<BlockItem> WORKSHOP_CONTROLLER = ITEMS.registerSimpleBlockItem("workshop_controller", ModBlocks.WORKSHOP_CONTROLLER);
     public static final DeferredItem<BlockItem> PIPE = ITEMS.registerSimpleBlockItem("pipe", ModBlocks.PIPE);
     public static final DeferredItem<WrenchItem> WRENCH = ITEMS.registerItem("wrench", WrenchItem::new, p -> p.stacksTo(1));
     public static final DeferredItem<FilterItem> FILTER = ITEMS.registerItem("filter", FilterItem::new, p -> p.stacksTo(1));
+    public static final DeferredItem<RecipeCardItem> RECIPE_CARD = ITEMS.registerItem("recipe_card", RecipeCardItem::new, p -> p.stacksTo(1));
     public static final DeferredItem<XpCrystalItem> XP_CRYSTAL = ITEMS.registerItem("xp_crystal", XpCrystalItem::new, p -> p.rarity(Rarity.UNCOMMON));
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("main", () -> CreativeModeTab.builder()
@@ -48,9 +51,11 @@ public final class ModItems {
                 out.accept(FISHERY_CONTROLLER.get());
                 out.accept(GUARD_CONTROLLER.get());
                 out.accept(ENCHANTER_CONTROLLER.get());
+                out.accept(WORKSHOP_CONTROLLER.get());
                 out.accept(PIPE.get());
                 out.accept(WRENCH.get());
                 out.accept(FILTER.get());
+                out.accept(RECIPE_CARD.get());
                 out.accept(XP_CRYSTAL.get());
             })
             .build());

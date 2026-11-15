@@ -1,6 +1,6 @@
 # Simple Automation
 
-**Put your copper golems to work.** Mark out a zone, drop a job controller in it, and every copper golem inside starts digging, chopping, smelting, farming, tending animals, fishing, guarding or enchanting for you. No power, no machines to upgrade: the tool you hand a golem decides how well it works.
+**Put your copper golems to work.** Mark out a zone, drop a job controller in it, and every copper golem inside starts digging, chopping, smelting, farming, tending animals, fishing, guarding, enchanting or crafting for you. No power, no machines to upgrade: the tool you hand a golem decides how well it works.
 
 Made for NeoForge 1.21.11. Works in survival from the start: everything is crafted from copper, a chest and a bit of redstone.
 
@@ -31,7 +31,7 @@ A golem holding something useless for its job shows a **"?"** above its head.
 
 ---
 
-## The nine jobs
+## The ten jobs
 
 | Controller | Golem holds | What happens |
 |---|---|---|
@@ -44,6 +44,7 @@ A golem holding something useless for its job shows a **"?"** above its head.
 | **Fishery** | fishing rod | Golems stand on the bank and fish in the still water of the zone, one water block each, within 5 blocks of the bank. Same loot as a player: Luck of the Sea and Lure count, and treasure only bites in open water (at least 5×5 and 2 deep). Each catch gives 1 to 6 experience, as crystals, and wears the rod. |
 | **Guard Post** | sword, axe, mace or trident | Golems strike the hostile mobs in the zone like a player: one full-strength hit per attack cooldown, with the weapon's damage and enchantments, one point of wear per hit. Kills count as player kills (Looting works); drops go to the chest and experience comes out as crystals. Bosses, named or leashed mobs and the Warden are left alone. |
 | **Enchanter** | book | Works at an enchanting table placed in the zone, with the power of the bookshelves around it (vanilla rules, up to 15). Always takes the third option, with random enchantments like a player. Costs 3 lapis plus the experience of 3 levels per item (306 experience at level 30), paid from the stored experience and experience crystals in the chests. **Every unenchanted enchantable item and every book in the chests gets enchanted.** |
+| **Workshop** | Recipe Card | Works at the crafting tables, smithing tables, stonecutters and brewing stands of the zone: one card is one recipe on one kind of station. The golem takes the materials from the chest (any item the recipe accepts, the card's own item first), uses the nearest station of its kind and puts the result and the leftovers (empty buckets...) in the chest. At a brewing stand the real block brews (vanilla 20 seconds): the golem loads base potions, ingredient and blaze powder, then empties the finished potions, one golem per stand. Chain cards through the chests: one card's result is another card's material. |
 
 Tips:
 - **Quarry:** golems place cobblestone under themselves over caves, lava and water, and seal lava next to the blocks they dig. Put cobblestone in the chest; if there is none they still place it. The quarry waits on the stone layer until someone has a pickaxe.
@@ -51,6 +52,7 @@ Tips:
 - **Fishery:** dig a pond at least 5×5 and 2 deep, with nothing above it, for treasure: the water around the bobber must be open, like for a player.
 - **Guard Post:** mobs only spawn near players, so build the post where you spend time (a dark room next to your base). Mobs cannot hurt the golems.
 - **Enchanter:** put 15 bookshelves around the table (with a free block between them and the table) and keep lapis and experience crystals in the chest. Only leave in the chest what you want enchanted.
+- **Workshop:** right-click a crafting table, smithing table, stonecutter or brewing stand with a blank **Recipe Card** to set it to that kind of station, then put one item in each slot (not consumed; drag from JEI works too): the card shows the result. At the stonecutter, click the result to pick another one. Right-click in the air to open the card again; sneak and right-click another station to change its station. Anvil, grindstone and loom are not supported.
 - **Crusher:** leave some free cells with a solid floor inside the zone, at the markers' height: that is where golems set the ores down.
 
 ---
@@ -93,11 +95,13 @@ All controllers use the same shape: copper ingots around, a **chest** in the mid
 | Fishery | fishing rod |
 | Guard Post | iron sword |
 | Enchanter | enchanting table |
+| Workshop | crafting table |
 
 - Border Marker ×2: lightning rod + redstone (shapeless)
 - Copper Pipe ×8: copper ingot, glass, copper ingot
 - Wrench: 4 copper ingots (Y shape)
 - Pipe Filter: paper over a copper ingot over a hopper
+- Recipe Card: paper + copper ingot (shapeless)
 
 With JEI installed, every block and item also has an information page.
 
@@ -106,7 +110,7 @@ With JEI installed, every block and item also has an information page.
 ## Compatibility
 
 - **Jade:** look at a controller to see its job, status, workers (busy, idle, missing a tool) and stored items; look at a pipe to see the mode and filter of each side.
-- **JEI:** information pages for every block and item, and you can drag items from JEI straight into a Pipe Filter.
+- **JEI:** information pages for every block and item, and you can drag items from JEI straight into a Pipe Filter or a Recipe Card.
 - **Claim and protection mods** (FTB Chunks, Open Parties and Claims...): golems ask permission like a player would before breaking or placing blocks and before shearing or breeding animals. Protected spots are skipped.
 - **Modded content:** modded storage (any block with an item inventory), ores (`c:ores`), logs and saplings, crops, seeds (`c:seeds`), shears, swords, animals and furnaces that extend the vanilla ones are all supported.
 - **Modpack tags:**
