@@ -133,6 +133,11 @@ public final class SATests {
         test("farm_seeds_tag_skips_unharvestable", MiscTests::farmSeedsTagSkipsUnharvestable, 900, NO_RANDOM_TICKS);
         // Évolutions : XP en cristaux, Lumber, Crusher, Farm, Barn, nouveaux contrôleurs
         test("xp_bank_makes_crystals", XpTests::bankMakesCrystals, 100);
+        test("lumber_dark_oak_square", LumberTests::darkOakReplantedAsSquare, 900);
+        test("lumber_dark_oak_waits_for_four", LumberTests::darkOakWaitsForFour, 500);
+        test("lumber_spruce_falls_back_to_one", LumberTests::spruceFallsBackToOne, 900);
+        test("lumber_leaves_give_saplings", LumberTests::leavesGiveSaplings, 900);
+        test("lumber_mangrove_beside_roots", LumberTests::mangroveReplantedBesideRoots, 900);
     }
 
     public static void register(IEventBus modBus) {

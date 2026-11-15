@@ -93,6 +93,14 @@ public final class GolemTools {
 
     /** Comme {@link #breakBlock}, mais rend les drops au lieu de les ranger (la ferme garde une graine pour replanter). Null si protégé. */
     public static @Nullable List<ItemStack> harvest(ZoneControllerBlockEntity zone, Worker worker, BlockPos pos, boolean effects) {
+        return harvest(zone, worker, pos, effects, true);
+    }
+
+    /**
+     * {@code wear} faux : l'outil n'est pas usé (les feuilles d'un arbre abattu tombent avec lui, la hache ne s'use
+     * que sur les bûches, comme quand les feuilles se décomposent toutes seules).
+     */
+    public static @Nullable List<ItemStack> harvest(ZoneControllerBlockEntity zone, Worker worker, BlockPos pos, boolean effects, boolean wear) {
         ServerLevel level = (ServerLevel) zone.getLevel();
         if (level == null) return null;
         BlockState state = level.getBlockState(pos);
@@ -107,7 +115,7 @@ public final class GolemTools {
             float hardness = state.getDestroySpeed(level, pos);
             if (effects) level.levelEvent(2001, pos, Block.getId(state));
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-            if (!worker.tool.isEmpty() && worker.tool.isDamageableItem() && hardness != 0) {
+            if (wear && !worker.tool.isEmpty() && worker.tool.isDamageableItem() && hardness != 0) {
                 worker.tool.hurtAndBreak(1, level, (ServerPlayer) null, item -> {});
             }
             return new java.util.ArrayList<>(drops);

@@ -16,6 +16,9 @@ public final class ModTags {
     /** Minerais que le broyeur ne prend jamais au coffre (vide par défaut). */
     public static final TagKey<Item> CRUSHER_BLACKLIST = TagKey.create(Registries.ITEM, SimpleAutomation.id("crusher_blacklist"));
 
+    /** Pousses qui ne donnent un arbre qu'en carré de 4 (chêne noir, chêne pâle) : la scierie attend d'en avoir 4. */
+    public static final TagKey<Item> MEGA_ONLY_SAPLINGS = TagKey.create(Registries.ITEM, SimpleAutomation.id("mega_only_saplings"));
+
     private ModTags() {
     }
 }

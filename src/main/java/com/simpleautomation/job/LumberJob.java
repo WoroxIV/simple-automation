@@ -2,19 +2,26 @@ package com.simpleautomation.job;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.simpleautomation.SAConfig;
+import com.simpleautomation.registry.ModTags;
 import com.simpleautomation.zone.Claims;
 import com.simpleautomation.zone.Worker;
 import com.simpleautomation.zone.ZoneBounds;
 import com.simpleautomation.zone.ZoneControllerBlockEntity;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -35,8 +42,8 @@ import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Scierie : les golems à la hache abattent les arbres entiers d'un coup, le contrôleur ramasse ce qui tombe
- * (bûches, pousses et pommes des feuilles qui se décomposent) et replante une pousse à chaque souche.
+ * Scierie : les golems à la hache abattent les arbres entiers d'un coup, feuilles comprises (leurs pousses arrivent
+ * tout de suite au coffre), et le contrôleur replante l'arbre avec les pousses des coffres (voir {@link #replantStumps}).
  * Les champignons géants du Nether (tiges carmin et biscornues) sont abattus aussi, et replantés sur le nylium assorti ;
  * un champignon ne pousse qu'à la poudre d'os : le contrôleur en prend au coffre pour faire grandir ceux qu'il a plantés.
  * Tout bois moddé du tag minecraft:logs est reconnu.
@@ -49,12 +56,23 @@ public final class LumberJob implements Job {
     private static final int COLUMNS_PER_CALL = 128;
     private static final int MAX_REPLANT = 64;
 
-    /** Souche à replanter, avec la pousse préférée (celle de l'arbre coupé) si on la connaît. */
-    private record Replant(BlockPos pos, Optional<Identifier> sapling) {
+    /** Rayon autour de la souche où l'on cherche une place pour la propagule d'un palétuvier poussé sur des racines. */
+    private static final int MANGROVE_SEARCH = 3;
+
+    /**
+     * Arbre abattu à replanter : une case, ou les 4 cases d'un gros arbre (2×2), avec la pousse de l'arbre coupé
+     * si on la connaît, et l'heure de la coupe (pour savoir quand se rabattre sur une autre espèce).
+     */
+    private record Replant(List<BlockPos> spots, Optional<Identifier> sapling, long since) {
         static final Codec<Replant> CODEC = RecordCodecBuilder.create(i -> i.group(
-                BlockPos.CODEC.fieldOf("pos").forGetter(Replant::pos),
-                Identifier.CODEC.optionalFieldOf("sapling").forGetter(Replant::sapling)
+                BlockPos.CODEC.listOf().fieldOf("spots").forGetter(Replant::spots),
+                Identifier.CODEC.optionalFieldOf("sapling").forGetter(Replant::sapling),
+                Codec.LONG.optionalFieldOf("since", 0L).forGetter(Replant::since)
         ).apply(i, Replant::new));
+
+        boolean mega() {
+            return spots.size() == 4;
+        }
     }
 
     private int cursor;
@@ -63,6 +81,8 @@ public final class LumberJob implements Job {
     private final List<Replant> replant = new ArrayList<>();
     /** Champignons plantés par la scierie, à faire grandir avec la poudre d'os du coffre. */
     private final List<BlockPos> fungi = new ArrayList<>();
+    /** Arbres abattus qui attendaient encore des pousses au dernier passage. */
+    private int starved;
 
     @Override
     public boolean acceptsTool(ItemStack tool) {
@@ -80,6 +100,7 @@ public final class LumberJob implements Job {
     public @Nullable Task nextTask(ZoneControllerBlockEntity zone, Worker worker) {
         ZoneBounds b = zone.bounds();
         if (b == null || !(zone.getLevel() instanceof ServerLevel level) || level.getGameTime() < idleUntil) return null;
+        if (waitsForSaplings()) return null;
         int columns = b.sizeX() * b.sizeZ();
         int toScan = Math.min(columns, COLUMNS_PER_CALL);
         for (int i = 0; i < toScan; i++) {
@@ -155,24 +176,51 @@ public final class LumberJob implements Job {
         for (BlockPos log : logs) {
             if (log.getY() == base.getY() && b.containsColumn(log.getX(), log.getZ())) stumps.add(log);
         }
+        // Les feuilles tombent avec l'arbre : leurs pousses arrivent tout de suite au coffre pour replanter.
+        List<BlockPos> leaves = TreeScanner.collectLeaves(level, logs, b);
         // Du haut vers le bas, la souche en dernier : si l'outil casse en route, l'arbre reste debout.
         logs.sort(Comparator.comparingInt((BlockPos p) -> p.getY()).reversed());
-        boolean axeBroke = false;
         for (BlockPos log : logs) {
-            if (worker.tool.isEmpty()) {
-                axeBroke = true;
-                break;
-            }
+            if (worker.tool.isEmpty()) return;
             GolemTools.breakBlock(zone, worker, log, log.equals(base) || log.getY() == base.getY());
         }
-        if (axeBroke) return;
-        for (BlockPos stump : stumps) {
-            // Sur des racines de palétuvier, aucune pousse ne tient : on n'attend pas indéfiniment.
-            if (!saplingFits(level, stump, sapling)) continue;
-            // Liste pleine (pousses jamais fournies) : on oublie la plus ancienne plutôt que de ne plus rien replanter.
-            if (replant.size() >= MAX_REPLANT) replant.removeFirst();
-            replant.add(new Replant(stump, sapling));
+        for (BlockPos leaf : leaves) {
+            List<ItemStack> drops = GolemTools.harvest(zone, worker, leaf, false, false);
+            if (drops != null) drops.forEach(zone.inventory()::output);
         }
+        List<BlockPos> spots = replantSpots(level, base, stumps, sapling);
+        if (spots.isEmpty()) return;
+        // Liste pleine (pousses jamais fournies) : on oublie la plus ancienne plutôt que de ne plus rien replanter.
+        if (replant.size() >= MAX_REPLANT) replant.removeFirst();
+        replant.add(new Replant(spots, sapling, level.getGameTime()));
+        replantStumps(zone, level); // Les pousses des feuilles sont déjà au coffre : on replante sans attendre.
+    }
+
+    /**
+     * Où replanter : les 4 souches d'un gros arbre (carré 2×2), sinon la souche principale. Un palétuvier pousse sur
+     * des racines où aucune propagule ne tient : on lui cherche une place sur la boue ou la terre voisine.
+     */
+    private static List<BlockPos> replantSpots(ServerLevel level, BlockPos base, List<BlockPos> stumps, Optional<Identifier> sapling) {
+        if (stumps.size() == 4 && isSquare(stumps) && stumps.stream().allMatch(p -> saplingFits(level, p, sapling))) {
+            return stumps.stream().sorted(Comparator.comparingInt((BlockPos p) -> p.getX()).thenComparingInt(p -> p.getZ())).toList();
+        }
+        if (saplingFits(level, base, sapling)) return List.of(base);
+        Block block = sapling.filter(BuiltInRegistries.BLOCK::containsKey).map(BuiltInRegistries.BLOCK::getValue).orElse(null);
+        if (block == null || !BuiltInRegistries.BLOCK.getKey(block).getPath().endsWith("_propagule")) return List.of();
+        BlockPos best = null;
+        for (BlockPos p : BlockPos.betweenClosed(base.offset(-MANGROVE_SEARCH, -3, -MANGROVE_SEARCH), base.offset(MANGROVE_SEARCH, 1, MANGROVE_SEARCH))) {
+            BlockState here = level.getBlockState(p);
+            if (!(here.isAir() || here.canBeReplaced()) || here.is(BlockTags.LOGS) || !block.defaultBlockState().canSurvive(level, p)) continue;
+            if (best == null || p.distSqr(base) < best.distSqr(base)) best = p.immutable();
+        }
+        return best == null ? List.of() : List.of(best);
+    }
+
+    private static boolean isSquare(List<BlockPos> four) {
+        int minX = four.stream().mapToInt(BlockPos::getX).min().orElse(0);
+        int minZ = four.stream().mapToInt(BlockPos::getZ).min().orElse(0);
+        return four.stream().allMatch(p -> p.getX() - minX <= 1 && p.getZ() - minZ <= 1)
+                && four.stream().distinct().count() == 4;
     }
 
     /** La pousse de l'arbre (ou, à défaut, une pousse de chêne, un champignon sur le nylium) pourrait-elle tenir à cet endroit ? */
@@ -247,34 +295,100 @@ public final class LumberJob implements Job {
         }
     }
 
+    /**
+     * Replante les arbres abattus avec les pousses des coffres :
+     * <ul>
+     * <li>d'abord l'espèce de l'arbre coupé ; un gros arbre (2×2) est replanté en carré dès qu'on a 4 pousses identiques ;</li>
+     * <li>le chêne noir et le chêne pâle ne poussent qu'en carré : on attend d'en avoir 4 ;</li>
+     * <li>sans pousse de la bonne espèce au bout de {@code lumberFallbackSeconds}, une autre espèce (celle qu'on a le plus)
+     * est plantée seule ; un épicéa ou un acajou géant sans 4 pousses est replanté avec une seule.</li>
+     * </ul>
+     */
     private void replantStumps(ZoneControllerBlockEntity zone, ServerLevel level) {
+        int fallback = SAConfig.LUMBER_FALLBACK_SECONDS.getAsInt();
+        starved = 0;
         for (int i = replant.size() - 1; i >= 0; i--) {
             Replant r = replant.get(i);
-            if (!level.isLoaded(r.pos())) continue;
-            BlockState here = level.getBlockState(r.pos());
-            if (!here.isAir() && !here.canBeReplaced()) {
+            if (r.spots().stream().anyMatch(p -> !level.isLoaded(p))) continue;
+            List<BlockPos> free = r.spots().stream().filter(p -> {
+                BlockState here = level.getBlockState(p);
+                return here.isAir() || here.canBeReplaced();
+            }).toList();
+            if (free.isEmpty()) {
                 replant.remove(i);
                 continue;
             }
-            ItemStack sapling = ItemStack.EMPTY;
-            if (r.sapling().isPresent()) {
-                Identifier wanted = r.sapling().get();
-                sapling = zone.inventory().find(s -> BuiltInRegistries.ITEM.getKey(s.getItem()).equals(wanted) && canPlant(level, r.pos(), s));
+            boolean late = fallback > 0 && level.getGameTime() - r.since() >= fallback * 20L;
+            Item wanted = r.sapling().filter(BuiltInRegistries.ITEM::containsKey).map(BuiltInRegistries.ITEM::getValue).orElse(null);
+            List<BlockPos> plantAt = null;
+            Item use = null;
+            if (wanted != null && wanted != Items.AIR) {
+                Item w = wanted;
+                boolean megaOnly = new ItemStack(w).is(ModTags.MEGA_ONLY_SAPLINGS);
+                int have = zone.inventory().count(st -> st.is(w));
+                if (r.mega() && free.size() == 4 && have >= 4 && free.stream().allMatch(p -> canPlant(level, p, new ItemStack(w)))) {
+                    plantAt = free;
+                    use = w;
+                } else if ((!r.mega() || (late && !megaOnly)) && have >= 1 && canPlant(level, free.getFirst(), new ItemStack(w))) {
+                    plantAt = List.of(free.getFirst());
+                    use = w;
+                }
+            } else {
+                wanted = null;
             }
-            if (sapling.isEmpty()) sapling = zone.inventory().find(s -> isSapling(s) && canPlant(level, r.pos(), s));
-            if (sapling.isEmpty()) continue; // On réessaiera quand les feuilles auront lâché des pousses.
-            BlockState plant = ((BlockItem) sapling.getItem()).getBlock().defaultBlockState();
-            // Une protection refuse la pose : on oublie cette souche, la pousse reste au coffre.
-            if (!Claims.canPlace(zone, r.pos(), plant)) {
+            if (use == null && (wanted == null || late)) {
+                BlockPos at = free.getFirst();
+                use = otherSapling(zone, level, at, wanted);
+                if (use != null) plantAt = List.of(at);
+            }
+            if (use == null) {
+                starved++;
+                continue; // On réessaiera quand des pousses arriveront.
+            }
+            BlockState plant = ((BlockItem) use).getBlock().defaultBlockState();
+            // Une protection refuse la pose : on oublie cet arbre, les pousses restent au coffre.
+            if (plantAt.stream().anyMatch(p -> !Claims.canPlace(zone, p, plant))) {
                 replant.remove(i);
                 continue;
             }
-            Item item = sapling.getItem();
-            if (zone.inventory().extract(s -> s.is(item), 1).isEmpty()) continue;
-            level.setBlock(r.pos(), plant, Block.UPDATE_ALL);
+            Item item = use;
+            ItemStack taken = zone.inventory().extract(st -> st.is(item), plantAt.size());
+            if (taken.getCount() < plantAt.size()) {
+                zone.inventory().output(taken); // Pas assez finalement (une pipe a été plus rapide) : on rend et on réessaiera.
+                starved++;
+                continue;
+            }
+            for (BlockPos p : plantAt) {
+                level.setBlock(p, plant, Block.UPDATE_ALL);
+                if (plant.getBlock() instanceof FungusBlock && !fungi.contains(p) && fungi.size() < MAX_REPLANT) fungi.add(p);
+            }
             replant.remove(i);
-            if (plant.getBlock() instanceof FungusBlock && !fungi.contains(r.pos()) && fungi.size() < MAX_REPLANT) fungi.add(r.pos());
         }
+    }
+
+    /** Pousse d'une autre espèce pour se rabattre : celle qu'on a le plus, qui pousse seule à cet endroit. */
+    private static @Nullable Item otherSapling(ZoneControllerBlockEntity zone, ServerLevel level, BlockPos at, @Nullable Item not) {
+        Map<Item, Integer> counts = new HashMap<>();
+        Set<Item> tried = new HashSet<>();
+        while (true) {
+            ItemStack found = zone.inventory().find(st -> isSapling(st) && st.getItem() != not && !tried.contains(st.getItem()));
+            if (found.isEmpty()) break;
+            Item item = found.getItem();
+            tried.add(item);
+            if (found.is(ModTags.MEGA_ONLY_SAPLINGS) || !canPlant(level, at, found)) continue;
+            counts.put(item, zone.inventory().count(st -> st.is(item)));
+        }
+        return counts.entrySet().stream().max(Map.Entry.comparingByValue()).map(Map.Entry::getKey).orElse(null);
+    }
+
+    /** Réglage {@code lumberWaitForSaplings} : pas de nouvel arbre tant qu'un arbre abattu attend ses pousses. */
+    private boolean waitsForSaplings() {
+        return starved > 0 && SAConfig.LUMBER_WAIT_FOR_SAPLINGS.getAsBoolean();
+    }
+
+    @Override
+    public void describeTo(ZoneControllerBlockEntity zone, Consumer<Component> lines) {
+        if (starved > 0) lines.accept(Component.translatable("message.simple_automation.lumber.needs_saplings", starved).withStyle(ChatFormatting.YELLOW));
     }
 
     /** Une pousse, ou un champignon du Nether. */

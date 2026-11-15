@@ -60,6 +60,56 @@ public final class TreeScanner {
         return logs;
     }
 
+    /** Distance maximale (en pas de feuille à feuille) d'une feuille à une bûche, comme la vanilla. */
+    private static final int LEAF_REACH = 6;
+    private static final int MAX_LEAVES = 1024;
+
+    /**
+     * Les feuilles naturelles qui tiennent grâce à ces bûches : celles qu'on atteint depuis elles en passant de feuille
+     * en feuille, à 6 pas au plus. On s'arrête aux feuilles collées à une autre bûche (un arbre voisin les garde).
+     * Le chapeau des champignons géants (verrues, champilampes) ne se décompose pas : il n'est pas concerné.
+     */
+    public static List<BlockPos> collectLeaves(ServerLevel level, List<BlockPos> logs, ZoneBounds bounds) {
+        Set<BlockPos> tree = new HashSet<>(logs);
+        Set<BlockPos> seen = new HashSet<>(logs);
+        List<BlockPos> leaves = new ArrayList<>();
+        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+        ArrayDeque<Integer> depth = new ArrayDeque<>();
+        for (BlockPos log : logs) {
+            queue.add(log);
+            depth.add(0);
+        }
+        while (!queue.isEmpty() && leaves.size() < MAX_LEAVES) {
+            BlockPos pos = queue.poll();
+            int d = depth.poll();
+            if (d >= LEAF_REACH) continue;
+            for (Direction dir : Direction.values()) {
+                BlockPos next = pos.relative(dir);
+                if (!withinOverhang(bounds, next) || !seen.add(next) || !level.isLoaded(next)) continue;
+                BlockState state = level.getBlockState(next);
+                if (!isDecayingLeaves(state) || touchesOtherLog(level, next, tree)) continue;
+                leaves.add(next);
+                queue.add(next);
+                depth.add(d + 1);
+            }
+        }
+        return leaves;
+    }
+
+    /** Des feuilles qui se décomposeraient sans bûche (pas posées par un joueur). */
+    private static boolean isDecayingLeaves(BlockState state) {
+        if (!(state.getBlock() instanceof LeavesBlock) && !state.is(BlockTags.LEAVES)) return false;
+        return !state.hasProperty(LeavesBlock.PERSISTENT) || !state.getValue(LeavesBlock.PERSISTENT);
+    }
+
+    private static boolean touchesOtherLog(ServerLevel level, BlockPos pos, Set<BlockPos> tree) {
+        for (Direction dir : Direction.values()) {
+            BlockPos n = pos.relative(dir);
+            if (!tree.contains(n) && level.getBlockState(n).is(BlockTags.LOGS)) return true;
+        }
+        return false;
+    }
+
     /**
      * Feuillage naturel : des feuilles qui ne sont pas posées par un joueur (y compris les feuilles moddées du tag
      * minecraft:leaves), ou le chapeau d'un champignon géant (blocs de verrues, champilampes).
