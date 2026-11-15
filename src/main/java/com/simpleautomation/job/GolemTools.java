@@ -51,6 +51,11 @@ public final class GolemTools {
     }
 
     /** Houe, ou tout outil qui sait labourer. */
+    /** Cisailles (tag NeoForge, vanilla ou action de cisaillement). */
+    public static boolean isShears(ItemStack tool) {
+        return tool.is(Tags.Items.TOOLS_SHEAR) || tool.is(net.minecraft.world.item.Items.SHEARS) || tool.canPerformAction(ItemAbilities.SHEARS_HARVEST);
+    }
+
     public static boolean isHoe(ItemStack tool) {
         return !tool.isEmpty() && (tool.is(ItemTags.HOES) || tool.canPerformAction(ItemAbilities.HOE_TILL));
     }

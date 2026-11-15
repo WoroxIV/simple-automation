@@ -153,6 +153,9 @@ public final class SATests {
         test("fishery_open_water_treasure", FisheryTests::openWaterTreasure, 100);
         test("guard_kills_zombies", GuardTests::killsZombies, 900);
         test("guard_skips_excluded", GuardTests::skipsExcluded, 600);
+        test("farm_shears_honeycombs", BeekeepingTests::shearsGiveHoneycombs, 600);
+        test("farm_bottle_honey", BeekeepingTests::bottleGivesHoneyBottle, 600);
+        test("farm_hoe_ignores_hives", BeekeepingTests::hoeIgnoresHives, 400);
     }
 
     public static void register(IEventBus modBus) {

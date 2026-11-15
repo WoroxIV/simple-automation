@@ -21,7 +21,15 @@ import net.minecraft.util.TriState;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.block.AttachedStemBlock;
+import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CocoaBlock;
@@ -57,6 +65,9 @@ import org.jspecify.annotations.Nullable;
  * Cultures moddées hors CropBlock : le tag simple_automation:farm_crops (récoltées quand leur « age » est au maximum,
  * replantées avec une graine de la récolte) ; graines semées en plus : le tag simple_automation:farm_seeds (c:seeds).
  * Mains nues, ça marche lentement ; une houe va plus vite, et une houe Fortune donne plus.
+ * Apiculteur : un golem aux cisailles ou à la fiole vide s'occupe des ruches et nids pleins (jusqu'à 12 blocs au-dessus
+ * des bornes) : rayons de miel via la table de récolte vanilla, ou une fiole de miel (la fiole vide vient des coffres).
+ * Les abeilles restent calmes : le niveau de miel est remis à 0 sans les relâcher.
  */
 public final class FarmJob implements Job {
     private static final int SEARCH = 3;
@@ -68,7 +79,14 @@ public final class FarmJob implements Job {
     /** Une case où une protection a refusé la pose n'est plus proposée pendant ce temps (30 secondes). */
     private static final long REFUSED_TICKS = 600;
 
+    /** Durée d'une récolte de ruche, avant oxydation et multiplicateur de la config. */
+    private static final int HIVE_TICKS = 20;
+
     private int cursor;
+    private int hiveCursor;
+    private long hiveIdleUntil;
+    /** Ruches visées (parmi {@link #claimed}). */
+    private final Set<BlockPos> hives = new HashSet<>();
     private long idleUntil;
     private final Set<BlockPos> claimed = new HashSet<>();
     /** Cases à semer (parmi {@link #claimed}) : ces tâches ne cassent rien. */
@@ -78,12 +96,24 @@ public final class FarmJob implements Job {
 
     @Override
     public boolean acceptsTool(ItemStack tool) {
-        return tool.isEmpty() || GolemTools.isHoe(tool);
+        return tool.isEmpty() || GolemTools.isHoe(tool) || isBeekeeping(tool);
+    }
+
+    /** Cisailles ou fiole vide : le golem s'occupe des ruches au lieu des cultures. */
+    private static boolean isBeekeeping(ItemStack tool) {
+        return GolemTools.isShears(tool) || tool.is(Items.GLASS_BOTTLE);
+    }
+
+    private static boolean isFullHive(BlockState state) {
+        return state.getBlock() instanceof BeehiveBlock && state.getValue(BeehiveBlock.HONEY_LEVEL) >= BeehiveBlock.MAX_HONEY_LEVELS;
     }
 
     @Override
     public void reset(ZoneControllerBlockEntity zone) {
         cursor = 0;
+        hiveCursor = 0;
+        hiveIdleUntil = 0;
+        hives.clear();
         idleUntil = 0;
         claimed.clear();
         planting.clear();
@@ -93,7 +123,9 @@ public final class FarmJob implements Job {
     @Override
     public @Nullable Task nextTask(ZoneControllerBlockEntity zone, Worker worker) {
         ZoneBounds b = zone.bounds();
-        if (b == null || !(zone.getLevel() instanceof ServerLevel level) || level.getGameTime() < idleUntil) return null;
+        if (b == null || !(zone.getLevel() instanceof ServerLevel level)) return null;
+        if (isBeekeeping(worker.tool)) return nextHive(zone, worker, level, b);
+        if (level.getGameTime() < idleUntil) return null;
         int columns = b.sizeX() * b.sizeZ();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         List<Block> seeds = null; // cultures dont un coffre a des graines, lues une seule fois par appel
@@ -140,6 +172,34 @@ public final class FarmJob implements Job {
                     claimed.add(target);
                     return new Task(target, standNear(zone, level, target));
                 }
+            }
+        }
+        return null;
+    }
+
+    /** Prochaine ruche pleine de la zone pour un golem aux cisailles ou à la fiole (curseur à part de celui des cultures). */
+    private @Nullable Task nextHive(ZoneControllerBlockEntity zone, Worker worker, ServerLevel level, ZoneBounds b) {
+        if (level.getGameTime() < hiveIdleUntil) return null;
+        boolean bottle = worker.tool.is(Items.GLASS_BOTTLE);
+        if (bottle && zone.inventory().count(s -> s.is(Items.GLASS_BOTTLE)) <= 0) return null;
+        int columns = b.sizeX() * b.sizeZ();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int i = 0; i < Math.min(columns, COLUMNS_PER_CALL); i++) {
+            if (hiveCursor >= columns) {
+                hiveCursor = 0;
+                hiveIdleUntil = level.getGameTime() + 40;
+                return null;
+            }
+            int x = b.minX() + hiveCursor % b.sizeX();
+            int z = b.minZ() + hiveCursor / b.sizeX();
+            hiveCursor++;
+            for (int y = b.markerY() - SEARCH; y <= b.markerY() + COCOA_HEIGHT; y++) {
+                pos.set(x, y, z);
+                if (claimed.contains(pos) || zone.isProtected(pos) || !isFullHive(level.getBlockState(pos))) continue;
+                BlockPos target = pos.immutable();
+                claimed.add(target);
+                hives.add(target);
+                return new Task(target, standNear(zone, level, target));
             }
         }
         return null;
@@ -279,12 +339,16 @@ public final class FarmJob implements Job {
 
     @Override
     public int budgetCost(Task task) {
-        return planting.contains(task.target()) ? 0 : 1;
+        return planting.contains(task.target()) || hives.contains(task.target()) ? 0 : 1;
     }
 
     @Override
     public int workTicks(ZoneControllerBlockEntity zone, Worker worker, Task task) {
         ServerLevel level = (ServerLevel) zone.getLevel();
+        if (hives.contains(task.target())) {
+            double ticks = HIVE_TICKS * SAConfig.WORK_SPEED_MULTIPLIER.getAsDouble() / Math.max(worker.speedFactor(), 0.05);
+            return Math.max(SAConfig.MIN_TICKS_PER_BLOCK.getAsInt(), (int) Math.ceil(ticks));
+        }
         if (planting.contains(task.target())) {
             double ticks = PLANT_TICKS * SAConfig.WORK_SPEED_MULTIPLIER.getAsDouble() / Math.max(worker.speedFactor(), 0.05);
             return Math.max(SAConfig.MIN_TICKS_PER_BLOCK.getAsInt(), (int) Math.ceil(ticks));
@@ -299,6 +363,7 @@ public final class FarmJob implements Job {
     public boolean isStillValid(ZoneControllerBlockEntity zone, Task task) {
         ServerLevel level = (ServerLevel) zone.getLevel();
         BlockState state = level.getBlockState(task.target());
+        if (hives.contains(task.target())) return isFullHive(state);
         return planting.contains(task.target()) ? isEmptyFarmland(level, task.target(), state) : isRipe(level, task.target(), state);
     }
 
@@ -307,6 +372,10 @@ public final class FarmJob implements Job {
         claimed.remove(task.target());
         ServerLevel level = (ServerLevel) zone.getLevel();
         BlockPos pos = task.target();
+        if (hives.remove(pos)) {
+            harvestHive(zone, worker, level, pos);
+            return;
+        }
         if (planting.remove(pos)) {
             if (!plant(zone, level, pos)) refused.put(pos, level.getGameTime() + REFUSED_TICKS);
             return;
@@ -339,6 +408,48 @@ public final class FarmJob implements Job {
             if (planted) level.setBlock(pos, young, Block.UPDATE_ALL);
         }
         for (ItemStack drop : drops) if (!drop.isEmpty()) zone.inventory().output(drop);
+    }
+
+    /**
+     * Ruche pleine : cisailles (table de récolte vanilla, 1 point d'usure) ou fiole (une fiole vide des coffres devient une
+     * fiole de miel). Le niveau de miel retombe à 0 sans relâcher d'abeilles : elles restent calmes. Les protections sont
+     * consultées comme pour un joueur qui clique sur la ruche.
+     */
+    private static void harvestHive(ZoneControllerBlockEntity zone, Worker worker, ServerLevel level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (!isFullHive(state)) return;
+        boolean bottle = worker.tool.is(Items.GLASS_BOTTLE);
+        if (!bottle && !GolemTools.isShears(worker.tool)) return;
+        if (bottle && zone.inventory().count(s -> s.is(Items.GLASS_BOTTLE)) <= 0) return;
+        FakePlayer fake = zone.fakePlayer();
+        fake.setItemInHand(InteractionHand.MAIN_HAND, worker.tool);
+        try {
+            BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+            PlayerInteractEvent.RightClickBlock event = CommonHooks.onRightClickBlock(fake, InteractionHand.MAIN_HAND, pos, hit);
+            if (event.isCanceled() || event.getUseBlock() == TriState.FALSE) return;
+            if (bottle) {
+                if (zone.inventory().extract(s -> s.is(Items.GLASS_BOTTLE), 1).isEmpty()) return;
+                zone.inventory().output(new ItemStack(Items.HONEY_BOTTLE));
+                level.playSound(null, pos, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+                level.gameEvent(fake, GameEvent.FLUID_PICKUP, pos);
+            } else {
+                LootParams params = new LootParams.Builder(level)
+                        .withParameter(LootContextParams.BLOCK_STATE, state)
+                        .withOptionalParameter(LootContextParams.BLOCK_ENTITY, level.getBlockEntity(pos))
+                        .withOptionalParameter(LootContextParams.INTERACTING_ENTITY, fake)
+                        .withOptionalParameter(LootContextParams.TOOL, worker.tool)
+                        .create(LootContextParamSets.BLOCK_INTERACT);
+                for (ItemStack drop : level.getServer().reloadableRegistries().getLootTable(BuiltInLootTables.HARVEST_BEEHIVE).getRandomItems(params)) {
+                    zone.inventory().output(drop);
+                }
+                level.playSound(null, pos, SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
+                level.gameEvent(fake, GameEvent.SHEAR, pos);
+                if (worker.tool.isDamageableItem()) worker.tool.hurtAndBreak(1, level, (net.minecraft.server.level.ServerPlayer) null, item -> {});
+            }
+            ((BeehiveBlock) state.getBlock()).resetHoneyLevel(level, state, pos);
+        } finally {
+            fake.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        }
     }
 
     /**
@@ -380,6 +491,7 @@ public final class FarmJob implements Job {
     public void release(Task task) {
         claimed.remove(task.target());
         planting.remove(task.target());
+        hives.remove(task.target());
     }
 
     @Override

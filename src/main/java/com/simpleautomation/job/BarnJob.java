@@ -91,7 +91,7 @@ public final class BarnJob implements Job {
     }
 
     private static boolean isShears(ItemStack tool) {
-        return tool.is(Tags.Items.TOOLS_SHEAR) || tool.is(Items.SHEARS) || tool.canPerformAction(ItemAbilities.SHEARS_HARVEST);
+        return GolemTools.isShears(tool);
     }
 
     private static boolean isBrush(ItemStack tool) {
