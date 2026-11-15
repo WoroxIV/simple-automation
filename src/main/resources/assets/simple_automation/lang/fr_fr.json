@@ -80,6 +80,7 @@
   "station.simple_automation.brewing": "Alambic",
   "gui.simple_automation.recipe_card.clear_hint": "Clic avec un objet pour le placer, clic main vide pour l'effacer",
   "gui.simple_automation.recipe_card.cycle_hint": "Clic : résultat suivant, clic droit : précédent",
+  "gui.simple_automation.recipe_card.title": "%s : %s",
   "message.simple_automation.recipe_card.blank": "Fais clic droit avec cette fiche sur un établi, une table de forgeron, un tailleur de pierre ou un alambic pour la régler.",
   "message.simple_automation.filter.no_container": "Pose le filtre sur un bras de tuyau tourné vers un conteneur",
   "message.simple_automation.zone.hint_fence": "Pense à clôturer la zone : des animaux en sortent.",

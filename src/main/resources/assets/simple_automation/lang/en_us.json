@@ -80,6 +80,7 @@
   "station.simple_automation.brewing": "Brewing Stand",
   "gui.simple_automation.recipe_card.clear_hint": "Click with an item to set it, click with an empty hand to clear",
   "gui.simple_automation.recipe_card.cycle_hint": "Click: next result, right-click: previous",
+  "gui.simple_automation.recipe_card.title": "%s: %s",
   "message.simple_automation.recipe_card.blank": "Right-click a crafting table, smithing table, stonecutter or brewing stand with this card to set it up.",
   "message.simple_automation.filter.no_container": "Place the filter on a pipe arm facing a container",
   "message.simple_automation.zone.hint_fence": "Tip: fence the zone in, animals are wandering out of it.",

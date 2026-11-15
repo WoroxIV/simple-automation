@@ -16,6 +16,7 @@
   - The leaves fall with the tree: their saplings, sticks and apples go straight to the chests instead of waiting for the leaves to decay. The axe does not wear out on leaves.
   - Each tree is replanted with its own species. 2x2 trees are replanted as a square of 4 saplings of the same species, never a mix. Dark oak and pale oak wait for 4 saplings.
   - If the right sapling is still missing after `lumberFallbackSeconds` (60 by default, 0 = never), another species is planted (the one you have the most of). A big spruce or jungle tree without 4 saplings gets a single one.
+  - Bee nests on a felled tree no longer stay floating: they fall with it and reach the chests whole, with their bees and honey, ready to be placed somewhere else.
   - Nether fungi are replanted on the matching nylium next to the stump when the nylium under the stem has turned back into netherrack (vanilla does this under any block). Before, the fungus was silently never replanted.
   - Mangroves growing on roots are replanted with a propagule from the chests on the mud next to the roots (mangrove leaves give no propagules).
   - Clicking the controller tells you how many felled trees are waiting for saplings. With `lumberWaitForSaplings` turned on, golems stop felling new trees until they are replanted.

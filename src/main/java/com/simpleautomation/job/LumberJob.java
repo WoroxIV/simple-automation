@@ -21,24 +21,32 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FungusBlock;
 import net.minecraft.world.level.block.LevelEvent;
+import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -178,6 +186,7 @@ public final class LumberJob implements Job {
         }
         // Les feuilles tombent avec l'arbre : leurs pousses arrivent tout de suite au coffre pour replanter.
         List<BlockPos> leaves = TreeScanner.collectLeaves(level, logs, b);
+        List<BlockPos> nests = nestsOn(level, logs, leaves);
         // Du haut vers le bas, la souche en dernier : si l'outil casse en route, l'arbre reste debout.
         logs.sort(Comparator.comparingInt((BlockPos p) -> p.getY()).reversed());
         for (BlockPos log : logs) {
@@ -188,12 +197,57 @@ public final class LumberJob implements Job {
             List<ItemStack> drops = GolemTools.harvest(zone, worker, leaf, false, false);
             if (drops != null) drops.forEach(zone.inventory()::output);
         }
+        for (BlockPos nest : nests) takeNest(zone, level, worker, nest);
         List<BlockPos> spots = replantSpots(level, base, stumps, sapling);
         if (spots.isEmpty()) return;
         // Liste pleine (pousses jamais fournies) : on oublie la plus ancienne plutôt que de ne plus rien replanter.
         if (replant.size() >= MAX_REPLANT) replant.removeFirst();
         replant.add(new Replant(spots, sapling, level.getGameTime()));
         replantStumps(zone, level); // Les pousses des feuilles sont déjà au coffre : on replante sans attendre.
+    }
+
+    /**
+     * Les nids d'abeilles accrochés à l'arbre (contre le tronc ou sous les feuilles, là où la génération vanilla les
+     * pose) : ils resteraient en l'air une fois l'arbre abattu. Les ruches fabriquées par un joueur ne sont pas concernées.
+     */
+    private static List<BlockPos> nestsOn(ServerLevel level, List<BlockPos> logs, List<BlockPos> leaves) {
+        Set<BlockPos> nests = new HashSet<>();
+        for (List<BlockPos> part : List.of(logs, leaves)) {
+            for (BlockPos pos : part) {
+                for (Direction d : Direction.values()) {
+                    BlockPos n = pos.relative(d);
+                    BlockState state = level.getBlockState(n);
+                    if (state.is(BlockTags.BEEHIVES) && !state.is(Blocks.BEEHIVE)) nests.add(n.immutable());
+                }
+            }
+        }
+        return new ArrayList<>(nests);
+    }
+
+    /**
+     * Le nid tombe avec l'arbre et arrive au coffre entier, avec ses abeilles et son miel (comme cueilli en Silk Touch) :
+     * le joueur le replace où il veut, sans abeilles énervées ni perdues. Un nid moddé qui ne se ramasse pas ainsi
+     * relâche d'abord ses abeilles.
+     */
+    private static void takeNest(ZoneControllerBlockEntity zone, ServerLevel level, Worker worker, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        FakePlayer fake = zone.fakePlayer();
+        fake.setItemInHand(InteractionHand.MAIN_HAND, worker.tool);
+        try {
+            if (NeoForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, state, fake)).isCanceled()) return;
+            ItemStack silk = worker.tool.copy();
+            silk.enchant(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH), 1);
+            BlockEntity be = level.getBlockEntity(pos);
+            List<ItemStack> drops = Block.getDrops(state, level, pos, be, fake, silk);
+            if (drops.stream().noneMatch(st -> st.is(state.getBlock().asItem())) && be instanceof BeehiveBlockEntity hive) {
+                hive.emptyAllLivingFromHive(null, state, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
+            }
+            level.levelEvent(2001, pos, Block.getId(state));
+            level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            drops.forEach(zone.inventory()::output);
+        } finally {
+            fake.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        }
     }
 
     /**

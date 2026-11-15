@@ -3,12 +3,17 @@ package com.simpleautomation.test;
 import com.simpleautomation.SAConfig;
 import com.simpleautomation.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.golem.CopperGolem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.component.Bees;
+import net.minecraft.world.level.block.BeehiveBlock;
+import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
@@ -128,6 +133,30 @@ public final class LumberTests {
             h.assertBlockPresent(Blocks.MANGROVE_ROOTS, 3, 2, 3);
             int planted = TestKit.countBlocks(h, Blocks.MANGROVE_PROPAGULE, new BlockPos(0, 2, 0), new BlockPos(6, 3, 6));
             h.assertTrue(planted == 1, "expected 1 propagule planted next to the roots, got " + planted);
+        });
+    }
+
+    /**
+     * Un chêne avec un nid d'abeilles contre le tronc (une abeille dedans, miel au niveau 3) : le nid ne reste pas en
+     * l'air, il arrive au coffre avec son abeille et son miel.
+     */
+    public static void beeNestFallsWithTree(GameTestHelper h) {
+        yard(h, Blocks.DIRT);
+        for (int y = 2; y <= 6; y++) h.setBlock(3, y, 3, Blocks.OAK_LOG);
+        cap(h, 3, 7, 3);
+        h.setBlock(4, 4, 3, Blocks.BEE_NEST.defaultBlockState().setValue(BeehiveBlock.HONEY_LEVEL, 3));
+        h.getBlockEntity(new BlockPos(4, 4, 3), BeehiveBlockEntity.class).storeBee(BeehiveBlockEntity.Occupant.create(0));
+        h.succeedWhen(() -> {
+            h.assertBlockPresent(Blocks.AIR, 3, 4, 3);
+            h.assertBlockPresent(Blocks.AIR, 4, 4, 3);
+            ItemStack nest = ItemStack.EMPTY;
+            ChestBlockEntity chest = TestKit.chest(h, CHEST);
+            for (int i = 0; i < chest.getContainerSize(); i++) if (chest.getItem(i).is(Items.BEE_NEST)) nest = chest.getItem(i);
+            h.assertFalse(nest.isEmpty(), "the bee nest did not reach the chest");
+            var bees = nest.getOrDefault(DataComponents.BEES, Bees.EMPTY).bees();
+            h.assertTrue(bees.size() == 1, "expected the bee inside the nest, got " + bees.size());
+            var props = nest.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
+            h.assertTrue(Integer.valueOf(3).equals(props.get(BeehiveBlock.HONEY_LEVEL)), "honey level lost: " + props);
         });
     }
 

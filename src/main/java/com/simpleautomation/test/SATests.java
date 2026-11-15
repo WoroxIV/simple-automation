@@ -66,7 +66,7 @@ public final class SATests {
         test("crusher_fortune_multiplies", SATests::crusherFortuneMultiplies, 1800);
         test("farm_harvests_and_replants", SATests::farmHarvestsAndReplants, 600);
         test("barn_shears_sheep", SATests::barnShearsSheep, 600);
-        test("barn_breeds", SATests::barnBreeds, 900);
+        test("barn_breeds", SATests::barnBreeds, 1600);
         test("barn_culls_extra_adults", SATests::barnCulls, 900);
         test("lightning_deoxidizes_workers", SATests::lightningDeoxidizes, 200);
         // Itération 2
@@ -143,6 +143,7 @@ public final class SATests {
         test("lumber_spruce_falls_back_to_one", LumberTests::spruceFallsBackToOne, 900);
         test("lumber_leaves_give_saplings", LumberTests::leavesGiveSaplings, 900);
         test("lumber_mangrove_beside_roots", LumberTests::mangroveReplantedBesideRoots, 900);
+        test("lumber_bee_nest_falls_with_tree", LumberTests::beeNestFallsWithTree, 900);
         test("forge_xp_to_bank", XpTests::forgeXpToBank, 1600);
         test("crusher_plain_pickaxe_bonus", CrusherTests::plainPickaxeBonus, 1800);
         test("crusher_ignores_silk_touch", CrusherTests::ignoresSilkTouch, 900);

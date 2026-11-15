@@ -27,10 +27,20 @@ public class RecipeCardScreen extends AbstractContainerScreen<RecipeCardMenu> {
         super(menu, inventory, title);
     }
 
+    /**
+     * Titre et station sur une seule ligne (« Fiche de recette : Établi ») : la grille de l'établi commence à y = 17,
+     * comme celle de l'établi vanilla, il n'y a la place que pour une ligne de texte au-dessus.
+     */
+    private Component header = Component.empty();
+
     @Override
     protected void init() {
         super.init();
-        titleLabelX = (imageWidth - font.width(title)) / 2;
+        header = Component.translatable("gui.simple_automation.recipe_card.title", title,
+                Component.translatable("station.simple_automation." + menu.station().id()));
+        // Trop long pour le panneau (« Fiche de recette : Table de forgeron ») : la station seule suffit.
+        if (font.width(header) > imageWidth - 16) header = Component.translatable("station.simple_automation." + menu.station().id());
+        titleLabelX = (imageWidth - font.width(header)) / 2;
     }
 
     @Override
@@ -76,8 +86,7 @@ public class RecipeCardScreen extends AbstractContainerScreen<RecipeCardMenu> {
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, TEXT, false);
-        graphics.drawString(font, Component.translatable("station.simple_automation." + menu.station().id()), 8, 6 + 10, 0xFF707070, false);
+        graphics.drawString(font, header, titleLabelX, titleLabelY, TEXT, false);
         graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, TEXT, false);
     }
 
