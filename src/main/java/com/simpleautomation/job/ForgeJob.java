@@ -27,7 +27,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
@@ -294,7 +293,7 @@ public final class ForgeJob implements Job {
         if (!(zone.getLevel() instanceof ServerLevel level) || !(level.getBlockEntity(task.target()) instanceof AbstractFurnaceBlockEntity furnace)) return;
         BlockPos pos = task.target();
 
-        // 1. Les produits (et un seau vide) partent au coffre, l'XP apparaît au-dessus du contrôleur.
+        // 1. Les produits (et un seau vide) partent au coffre, l'XP va au tampon du contrôleur (en cristaux, sans orbe).
         ResourceHandler<ItemResource> out = level.getCapability(Capabilities.Item.BLOCK, pos, Direction.DOWN);
         if (out != null) {
             ResourceStack<ItemResource> taken;
@@ -302,7 +301,7 @@ public final class ForgeJob implements Job {
                 zone.inventory().output(taken.resource().toStack(taken.amount()));
             }
         }
-        furnace.getRecipesToAwardAndPopExperience(level, Vec3.atCenterOf(zone.getBlockPos().above()));
+        collectXp(zone, level, furnace);
 
         // 2. Sa part de minerai (ou de n'importe quoi qui cuit dans ce four).
         ResourceHandler<ItemResource> top = level.getCapability(Capabilities.Item.BLOCK, pos, Direction.UP);
@@ -313,6 +312,24 @@ public final class ForgeJob implements Job {
         ResourceHandler<ItemResource> side = level.getCapability(Capabilities.Item.BLOCK, pos, Direction.NORTH);
         ItemStack fuel = fuelFor(zone, level, furnace, furnace.getItem(0), furnace.getItem(0).getCount());
         if (side != null && !fuel.isEmpty()) moveFromChests(zone, side, fuel);
+    }
+
+    /**
+     * L'XP des cuissons (0,7 par lingot de fer, 0,1 par pierre…) va entière au tampon de la zone : le tampon garde les
+     * fractions, là où la vanilla arrondit au hasard en faisant apparaître des orbes.
+     */
+    private static void collectXp(ZoneControllerBlockEntity zone, ServerLevel level, AbstractFurnaceBlockEntity furnace) {
+        if (furnace.recipesUsed.isEmpty()) return;
+        double xp = 0;
+        for (var entry : furnace.recipesUsed.reference2IntEntrySet()) {
+            var holder = level.recipeAccess().byKey(entry.getKey());
+            if (holder.isPresent() && holder.get().value() instanceof AbstractCookingRecipe cooking) {
+                xp += entry.getIntValue() * (double) cooking.experience();
+            }
+        }
+        furnace.recipesUsed.clear();
+        furnace.setChanged();
+        if (xp > 0) zone.xp().add(xp);
     }
 
     /** Déplace des coffres vers le four jusqu'à {@code what.getCount()} items identiques à {@code what}. */

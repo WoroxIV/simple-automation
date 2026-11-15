@@ -2,6 +2,7 @@
 
 - Experience Crystal (new item): the experience earned by golems never drops as orbs anymore. The controller stores it and puts one crystal (10 experience points) in its chests for every 10 points. Right-click to use one crystal, sneak to use the whole stack; Mending repairs as usual. Clicking the controller (and Jade) shows the experience waiting for the next crystal.
 - Golems also take what they need (saplings, food, buckets…) from the items waiting in the controller, not only from the chests.
+- Forge: the smelting experience goes to the controller and comes out as crystals, fractions included (no more orbs above the controller).
 - Lumber Yard: trees are replanted reliably.
   - The leaves fall with the tree: their saplings, sticks and apples go straight to the chests instead of waiting for the leaves to decay. The axe does not wear out on leaves.
   - Each tree is replanted with its own species. 2x2 trees are replanted as a square of 4 saplings of the same species, never a mix. Dark oak and pale oak wait for 4 saplings.

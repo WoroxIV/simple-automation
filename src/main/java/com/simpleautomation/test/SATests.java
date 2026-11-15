@@ -138,6 +138,7 @@ public final class SATests {
         test("lumber_spruce_falls_back_to_one", LumberTests::spruceFallsBackToOne, 900);
         test("lumber_leaves_give_saplings", LumberTests::leavesGiveSaplings, 900);
         test("lumber_mangrove_beside_roots", LumberTests::mangroveReplantedBesideRoots, 900);
+        test("forge_xp_to_bank", XpTests::forgeXpToBank, 1600);
     }
 
     public static void register(IEventBus modBus) {
