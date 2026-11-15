@@ -242,6 +242,8 @@ public final class FisheryJob implements Job {
         for (int dy = -1; dy <= 0; dy++) {
             for (int dx = -CAST_RANGE; dx <= CAST_RANGE; dx++) {
                 for (int dz = -CAST_RANGE; dz <= CAST_RANGE; dz++) {
+                    // Portée ronde : le bouchon reste à 5 blocs au plus du bord, même en diagonale.
+                    if (dx * dx + dz * dz > CAST_RANGE * CAST_RANGE) continue;
                     p.setWithOffset(bank, dx, dy, dz);
                     if (!water.contains(p) || claimed.contains(p)) continue;
                     BlockPos w = p.immutable();
