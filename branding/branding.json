@@ -1,0 +1,7 @@
+{
+  "title": [{"text": "SIMPLE", "ramp": "oxidized"}, {"text": "AUTOMATION", "ramp": "copper"}],
+  "sky": "workshop",
+  "header_ramp": "copper",
+  "headers": ["GETTING STARTED", "THE TOOL IS EVERYTHING", "THE SEVEN JOBS", "GOLEM CARE", "PIPES & FILTERS", "RECIPES", "COMPATIBILITY", "SERVER FRIENDLY", "FAQ"],
+  "seed": 7
+}

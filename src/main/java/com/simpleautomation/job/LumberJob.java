@@ -197,8 +197,13 @@ public final class LumberJob implements Job {
     }
 
     /**
-     * Où replanter : les 4 souches d'un gros arbre (carré 2×2), sinon la souche principale. Un palétuvier pousse sur
-     * des racines où aucune propagule ne tient : on lui cherche une place sur la boue ou la terre voisine.
+     * Où replanter : les 4 souches d'un gros arbre (carré 2×2), sinon la souche principale. Quand la souche ne convient
+     * plus, on cherche une place libre à côté :
+     * <ul>
+     * <li>un palétuvier pousse sur des racines où aucune propagule ne tient : place sur la boue ou la terre voisine ;</li>
+     * <li>sous un champignon géant, le nylium recouvert par la tige redevient du netherrack (règle vanilla) : place sur
+     * le nylium assorti voisin.</li>
+     * </ul>
      */
     private static List<BlockPos> replantSpots(ServerLevel level, BlockPos base, List<BlockPos> stumps, Optional<Identifier> sapling) {
         if (stumps.size() == 4 && isSquare(stumps) && stumps.stream().allMatch(p -> saplingFits(level, p, sapling))) {
@@ -206,11 +211,14 @@ public final class LumberJob implements Job {
         }
         if (saplingFits(level, base, sapling)) return List.of(base);
         Block block = sapling.filter(BuiltInRegistries.BLOCK::containsKey).map(BuiltInRegistries.BLOCK::getValue).orElse(null);
-        if (block == null || !BuiltInRegistries.BLOCK.getKey(block).getPath().endsWith("_propagule")) return List.of();
+        boolean fungus = block instanceof FungusBlock;
+        if (block == null || !(fungus || BuiltInRegistries.BLOCK.getKey(block).getPath().endsWith("_propagule"))) return List.of();
+        BlockState plant = block.defaultBlockState();
         BlockPos best = null;
         for (BlockPos p : BlockPos.betweenClosed(base.offset(-MANGROVE_SEARCH, -3, -MANGROVE_SEARCH), base.offset(MANGROVE_SEARCH, 1, MANGROVE_SEARCH))) {
             BlockState here = level.getBlockState(p);
-            if (!(here.isAir() || here.canBeReplaced()) || here.is(BlockTags.LOGS) || !block.defaultBlockState().canSurvive(level, p)) continue;
+            if (!(here.isAir() || here.canBeReplaced()) || here.is(BlockTags.LOGS) || !plant.canSurvive(level, p)) continue;
+            if (fungus && !((FungusBlock) block).isValidBonemealTarget(level, p, plant)) continue; // il ne grandirait jamais
             if (best == null || p.distSqr(base) < best.distSqr(base)) best = p.immutable();
         }
         return best == null ? List.of() : List.of(best);

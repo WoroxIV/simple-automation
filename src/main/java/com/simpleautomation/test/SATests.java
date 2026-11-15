@@ -143,6 +143,7 @@ public final class SATests {
         test("crusher_ignores_silk_touch", CrusherTests::ignoresSilkTouch, 900);
         test("farm_stems_stay_intact", FarmTests::stemsStayIntact, 400, NO_RANDOM_TICKS);
         test("quarry_xp_to_bank", XpTests::quarryXpToBank, 1200);
+        test("lumber_fungus_beside_netherrack", MiscTests::lumberFungusBesideNetherrack, 900);
     }
 
     public static void register(IEventBus modBus) {

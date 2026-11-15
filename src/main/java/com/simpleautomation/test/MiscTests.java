@@ -239,7 +239,8 @@ public final class MiscTests {
 
     /**
      * Un champignon carmin géant sur du nylium, un champignon carmin au coffre : les tiges sont abattues et rangées,
-     * le chapeau reste en l'air, et un champignon carmin est replanté sur le nylium.
+     * le chapeau reste en l'air, et un champignon carmin est replanté sur le nylium : sur la souche, ou à côté si le
+     * nylium sous la tige est redevenu du netherrack entre-temps (tick aléatoire vanilla).
      */
     public static void lumberFellsNetherFungus(GameTestHelper h) {
         for (int x = 0; x <= 8; x++)
@@ -261,7 +262,8 @@ public final class MiscTests {
             for (int y = 3; y <= 6; y++) h.assertBlockPresent(Blocks.AIR, 3, y, 3);
             int stems = count(h, chest, Items.CRIMSON_STEM);
             h.assertTrue(stems >= 5, "expected 5 crimson stems in the chest, got " + stems);
-            h.assertBlockPresent(Blocks.CRIMSON_FUNGUS, 3, 2, 3);
+            int planted = TestKit.countBlocks(h, Blocks.CRIMSON_FUNGUS, new BlockPos(0, 2, 0), new BlockPos(6, 2, 6));
+            h.assertTrue(planted == 1, "expected one crimson fungus replanted, got " + planted);
             h.assertTrue(count(h, chest, Items.CRIMSON_FUNGUS) == 1, "expected one fungus used from the chest");
             h.assertBlockPresent(Blocks.NETHER_WART_BLOCK, 3, 7, 3);
         });
@@ -321,9 +323,26 @@ public final class MiscTests {
         BlockPos chest = netherYard(h, new ItemStack(Items.CRIMSON_FUNGUS, 2));
         h.getBlockEntity(chest, ChestBlockEntity.class).setItem(1, new ItemStack(Items.BONE_MEAL, 32));
         h.succeedWhen(() -> {
-            h.assertTrue(count(h, chest, Items.BONE_MEAL) < 32, "no bone meal used");
+            h.assertTrue(count(h, chest, Items.BONE_MEAL) < 32, "no bone meal used: stump " + h.getBlockState(new BlockPos(3, 2, 3))
+                    + ", stems " + count(h, chest, Items.CRIMSON_STEM) + ", fungi " + count(h, chest, Items.CRIMSON_FUNGUS)
+                    + ", " + TestKit.describe(TestKit.zone(h, new BlockPos(6, 2, 6))));
             h.assertTrue(count(h, chest, Items.CRIMSON_STEM) > 3 || h.getBlockState(new BlockPos(3, 2, 3)).is(Blocks.CRIMSON_STEM),
                     "the replanted fungus did not grow: " + h.getBlockState(new BlockPos(3, 2, 3)));
+        });
+    }
+
+    /**
+     * La tige repose sur du netherrack (le nylium recouvert l'est devenu) : le champignon est replanté sur le nylium
+     * voisin, jamais perdu.
+     */
+    public static void lumberFungusBesideNetherrack(GameTestHelper h) {
+        BlockPos chest = netherYard(h, new ItemStack(Items.CRIMSON_FUNGUS, 2));
+        h.setBlock(3, 1, 3, Blocks.NETHERRACK);
+        h.succeedWhen(() -> {
+            h.assertBlockPresent(Blocks.AIR, 3, 2, 3);
+            int planted = TestKit.countBlocks(h, Blocks.CRIMSON_FUNGUS, new BlockPos(0, 2, 0), new BlockPos(6, 2, 6));
+            h.assertTrue(planted == 1, "expected one crimson fungus beside the netherrack, got " + planted);
+            h.assertTrue(count(h, chest, Items.CRIMSON_FUNGUS) == 1, "expected one fungus used from the chest");
         });
     }
 
