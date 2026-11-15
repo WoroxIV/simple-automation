@@ -2,6 +2,7 @@
 
 - Experience Crystal (new item): the experience earned by golems never drops as orbs anymore. The controller stores it and puts one crystal (10 experience points) in its chests for every 10 points. Right-click to use one crystal, sneak to use the whole stack; Mending repairs as usual. Clicking the controller (and Jade) shows the experience waiting for the next crystal.
 - Golems also take what they need (saplings, food, buckets…) from the items waiting in the controller, not only from the chests.
+- Quarry, Crusher, Lumber Yard and Farm: ores and other blocks that give experience when mined now give it to the controller too (coal, lapis, redstone, sculk…), like a player with the same tool. Silk Touch gives none, as in vanilla; the Crusher counts the experience once, without the bonus.
 - Forge: the smelting experience goes to the controller and comes out as crystals, fractions included (no more orbs above the controller).
 - Crusher: each ore now gives 50% more than mining it with the same pickaxe (`crusherMultiplier`, 1.5 by default), instead of keeping the best of 4 rolls. This helps without Fortune too: 1.5 raw iron per ore with a plain pickaxe, 3.3 on average with Fortune III. Silk Touch pickaxes are accepted and Silk Touch is ignored, so the quarry's pickaxe works. The `crusherRolls` setting is replaced by `crusherMultiplier`.
 - Farm: melon and pumpkin stems are never broken anymore (a fully grown stem was taken for a ripe crop). Pitcher and torchflower sprouts are left alone too.

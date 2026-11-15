@@ -112,9 +112,11 @@ public final class GolemTools {
             if (NeoForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, state, fake)).isCanceled()) return null;
             BlockEntity be = state.hasBlockEntity() ? level.getBlockEntity(pos) : null;
             List<ItemStack> drops = Block.getDrops(state, level, pos, be, fake, worker.tool);
+            int xp = blockXp(level, pos, state, be, fake, worker.tool);
             float hardness = state.getDestroySpeed(level, pos);
             if (effects) level.levelEvent(2001, pos, Block.getId(state));
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            if (xp > 0) zone.xp().add(xp);
             if (wear && !worker.tool.isEmpty() && worker.tool.isDamageableItem() && hardness != 0) {
                 worker.tool.hurtAndBreak(1, level, (ServerPlayer) null, item -> {});
             }
@@ -122,6 +124,16 @@ public final class GolemTools {
         } finally {
             fake.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         }
+    }
+
+    /**
+     * L'XP que lâcherait le bloc cassé par un joueur avec cet outil (minerais, sculk…), comme en vanilla : rien sans le
+     * bon outil, rien en Silk Touch (via les données de l'enchantement). Elle va au tampon de la zone, sans orbe.
+     */
+    public static int blockXp(ServerLevel level, BlockPos pos, BlockState state, @Nullable BlockEntity be, FakePlayer fake, ItemStack tool) {
+        if (!canHarvest(tool, state)) return 0;
+        int xp = state.getExpDrop(level, pos, be, fake, tool);
+        return xp > 0 ? EnchantmentHelper.processBlockExperience(level, tool, xp) : 0;
     }
 
     /** Ramasse les items au sol dans une boîte et les range (bûches, laine, viande…). */

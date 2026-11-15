@@ -254,11 +254,14 @@ public final class CrusherJob implements Job {
             breakRefused = false;
             BlockEntity be = state.hasBlockEntity() ? level.getBlockEntity(pos) : null;
             // Un seul tirage vanilla (Fortune compris) avec la pioche privée de Silk Touch, puis le bonus du broyeur.
-            List<ItemStack> drops = Block.getDrops(state, level, pos, be, fake, withoutSilkTouch(worker.tool));
+            ItemStack rollTool = withoutSilkTouch(worker.tool);
+            List<ItemStack> drops = Block.getDrops(state, level, pos, be, fake, rollTool);
+            int xp = GolemTools.blockXp(level, pos, state, be, fake, rollTool); // compté une fois, pas multiplié
             float hardness = state.getDestroySpeed(level, pos);
             level.levelEvent(2001, pos, Block.getId(state));
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
             placed.remove(pos);
+            if (xp > 0) zone.xp().add(xp);
             // Un minerai qui se redonne lui-même retourne au coffre (avec les drops) et ne sera plus posé.
             Item oreItem = state.getBlock().asItem();
             if (drops.stream().anyMatch(s -> s.is(oreItem))) uncrushable.add(oreItem);
