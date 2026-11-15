@@ -38,7 +38,7 @@ A golem holding something useless for its job shows a **"?"** above its head.
 | **Quarry** | pickaxe, shovel or nothing | Digs the zone layer by layer down to bedrock. Shovels and bare hands take dirt, sand and gravel; pickaxes take stone and ores. Golems work together along the same digging front. |
 | **Lumber Yard** | axe | Fells whole trees in one go (mangroves included), collects what falls and replants saplings from the drops or the chest. Huge crimson and warped fungi are felled too (the stems; the canopy stays) and replanted on their own nylium with fungi from the chest; put bone meal in the chest and the golems grow them back. |
 | **Forge** | nothing or a shovel | Tends every furnace, blast furnace and smoker in the zone: shares the input and fuel fairly between them, gives each one only the fuel it needs, and empties the results. With a shovel, golems stoke the fire so furnaces cook faster. |
-| **Crusher** | pickaxe (no Silk Touch) | Takes ore blocks from the chest, places them in the zone and mines them. The loot is rolled several times and the best result is kept, so Fortune III almost always gives the maximum. |
+| **Crusher** | pickaxe | Takes ore blocks from the chest, places them in the zone and mines them for 50% more loot than the same pickaxe would give. Fortune counts, Silk Touch is ignored: mine ores with Silk Touch, crush them with Fortune III. |
 | **Farm** | nothing or a hoe | Harvests ripe crops and replants them, sows seeds from the chest on empty farmland, picks sweet berries and ripe cocoa (up to 12 blocks up jungle trunks). Pumpkin and melon stems keep a free spot for their fruit. |
 | **Sheepfold** | shears | Shears every sheep and other shearable animal in the zone (modded ones too). Careful: a sheared mooshroom becomes a cow, like with a player. |
 | **Ranch** | animal food or a weapon | With food, breeds the animals that eat it (food taken from the chest), up to a limit per species (10 by default). With a sword, an axe, a mace or a trident, culls the extra adults above that limit. |
@@ -115,7 +115,7 @@ With JEI installed, every block and item also has an information page.
 - Golems inside a zone are **not entities**: the controller simulates them and clients only draw them. Fifty golems cost about as much as one block entity.
 - A **global block budget** caps how many blocks all golems of the server break per tick. Work slows down instead of lagging.
 - When the chests are full the zone **pauses**: nothing is dropped on the ground.
-- Everything is configurable in `simple_automation-server.toml` (world `serverconfig` folder): zone size, golems per zone, block budget, work speed, walk speed, crusher rolls, ranch limit, pipe speed.
+- Everything is configurable in `simple_automation-server.toml` (world `serverconfig` folder): zone size, golems per zone, block budget, work speed, walk speed, crusher bonus, ranch limit, pipe speed.
 
 ---
 

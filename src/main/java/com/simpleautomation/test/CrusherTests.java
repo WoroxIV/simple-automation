@@ -24,6 +24,35 @@ public final class CrusherTests {
     private static final BlockPos CHEST = new BlockPos(7, 2, 3);
 
     /**
+     * 20 minerais de fer, une pioche en fer sans enchantement : 1 fer brut par minerai × 1,5, soit 1 ou 2 au hasard,
+     * 30 en moyenne. Entre 24 et 36 (au-delà de 2,6 écarts-types).
+     */
+    public static void plainPickaxeBonus(GameTestHelper h) {
+        TestKit.floorAndZone(h, ModBlocks.CRUSHER_CONTROLLER.get());
+        TestKit.chest(h, CHEST).setItem(0, new ItemStack(Items.IRON_ORE, 20));
+        CopperGolem golem = h.spawn(EntityType.COPPER_GOLEM, new BlockPos(2, 2, 2));
+        golem.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_PICKAXE));
+        h.succeedWhen(() -> {
+            h.assertTrue(count(h, Items.IRON_ORE) == 0 && oresInZone(h) == 0, "ores left to crush");
+            int raw = count(h, Items.RAW_IRON);
+            h.assertTrue(raw >= 24 && raw <= 36, "expected 24 to 36 raw iron from 20 ores, got " + raw);
+        });
+    }
+
+    /** Une pioche Silk Touch broie quand même : le minerai donne du fer brut, jamais le minerai lui-même. */
+    public static void ignoresSilkTouch(GameTestHelper h) {
+        TestKit.floorAndZone(h, ModBlocks.CRUSHER_CONTROLLER.get());
+        TestKit.chest(h, CHEST).setItem(0, new ItemStack(Items.IRON_ORE, 3));
+        CopperGolem golem = h.spawn(EntityType.COPPER_GOLEM, new BlockPos(2, 2, 2));
+        golem.setItemInHand(InteractionHand.MAIN_HAND,
+                TestKit.enchanted(h, Items.DIAMOND_PICKAXE, net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH, 1));
+        h.succeedWhen(() -> {
+            h.assertTrue(count(h, Items.IRON_ORE) == 0 && oresInZone(h) == 0, "the ores came back or were not crushed");
+            h.assertTrue(count(h, Items.RAW_IRON) >= 3, "expected raw iron, got " + count(h, Items.RAW_IRON));
+        });
+    }
+
+    /**
      * 3 minerais de fer au coffre, un golem à la pioche en fer : un minerai doit apparaître sur un poste de la zone,
      * puis disparaître, et les 3 fers bruts arriver au coffre, sans rien laisser au sol ni dans la zone.
      */

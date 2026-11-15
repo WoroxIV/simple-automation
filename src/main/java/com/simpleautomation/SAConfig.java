@@ -12,7 +12,7 @@ public final class SAConfig {
     public static final ModConfigSpec.IntValue MIN_TICKS_PER_BLOCK;
     public static final ModConfigSpec.DoubleValue WORK_SPEED_MULTIPLIER;
     public static final ModConfigSpec.DoubleValue WORKER_WALK_SPEED;
-    public static final ModConfigSpec.IntValue CRUSHER_ROLLS;
+    public static final ModConfigSpec.DoubleValue CRUSHER_MULTIPLIER;
     public static final ModConfigSpec.IntValue LUMBER_FALLBACK_SECONDS;
     public static final ModConfigSpec.BooleanValue LUMBER_WAIT_FOR_SAPLINGS;
     public static final ModConfigSpec.IntValue RANCH_MAX_ANIMALS;
@@ -38,8 +38,8 @@ public final class SAConfig {
                 .defineInRange("workTimeMultiplier", 1.0, 0.1, 100.0);
         WORKER_WALK_SPEED = b.comment("Distance a golem walks per tick between two targets, in blocks.")
                 .defineInRange("walkSpeed", 0.25, 0.05, 4.0);
-        CRUSHER_ROLLS = b.comment("The crusher rolls the loot of each ore this many times with the golem's pickaxe and keeps the best result (1 = like mining it).")
-                .defineInRange("crusherRolls", 4, 1, 16);
+        CRUSHER_MULTIPLIER = b.comment("The crusher mines each ore like the golem's pickaxe would (Fortune included, Silk Touch ignored), then multiplies the loot by this.")
+                .defineInRange("crusherMultiplier", 1.5, 1.0, 4.0);
         LUMBER_FALLBACK_SECONDS = b.comment("The lumber yard replants the species of the felled tree. If none of its saplings is in the chests after this many seconds, it plants another species instead. 0 = never, wait for the right sapling.")
                 .defineInRange("lumberFallbackSeconds", 60, 0, 3600);
         LUMBER_WAIT_FOR_SAPLINGS = b.comment("When a felled tree is waiting for saplings, lumber golems stop felling new trees until it is replanted (false = keep cutting, the spot is replanted as soon as saplings arrive).")

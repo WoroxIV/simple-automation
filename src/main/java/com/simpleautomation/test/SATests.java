@@ -63,7 +63,7 @@ public final class SATests {
         test("pipe_moves_items", SATests::pipeMovesItems, 200);
         test("pipe_separated_by_wrench", SATests::pipeSeparatedByWrench, 200);
         test("forge_smelts_with_stoking", SATests::forgeSmeltsWithStoking, 1500);
-        test("crusher_fortune_multiplies", SATests::crusherFortuneMultiplies, 900);
+        test("crusher_fortune_multiplies", SATests::crusherFortuneMultiplies, 1800);
         test("farm_harvests_and_replants", SATests::farmHarvestsAndReplants, 600);
         test("shepherd_shears_sheep", SATests::shepherdShearsSheep, 600);
         test("ranch_breeds", SATests::ranchBreeds, 900);
@@ -139,6 +139,8 @@ public final class SATests {
         test("lumber_leaves_give_saplings", LumberTests::leavesGiveSaplings, 900);
         test("lumber_mangrove_beside_roots", LumberTests::mangroveReplantedBesideRoots, 900);
         test("forge_xp_to_bank", XpTests::forgeXpToBank, 1600);
+        test("crusher_plain_pickaxe_bonus", CrusherTests::plainPickaxeBonus, 1800);
+        test("crusher_ignores_silk_touch", CrusherTests::ignoresSilkTouch, 900);
     }
 
     public static void register(IEventBus modBus) {
@@ -257,10 +259,13 @@ public final class SATests {
         });
     }
 
-    /** 8 minerais de fer au coffre, un golem à la pioche Fortune III : on attend bien plus de 8 fers bruts. */
+    /**
+     * 24 minerais de fer au coffre, un golem à la pioche Fortune III : 3,3 fers bruts par minerai en moyenne (2,2 × 1,5),
+     * soit ~79. Au moins 50 (une pioche sans Fortune en donnerait 36).
+     */
     private static void crusherFortuneMultiplies(GameTestHelper h) {
         floorAndZone(h, ModBlocks.CRUSHER_CONTROLLER.get());
-        h.getBlockEntity(new BlockPos(7, 2, 3), ChestBlockEntity.class).setItem(0, new ItemStack(Items.IRON_ORE, 8));
+        h.getBlockEntity(new BlockPos(7, 2, 3), ChestBlockEntity.class).setItem(0, new ItemStack(Items.IRON_ORE, 24));
         ItemStack pickaxe = new ItemStack(Items.DIAMOND_PICKAXE);
         pickaxe.enchant(h.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
                 .getOrThrow(net.minecraft.world.item.enchantment.Enchantments.FORTUNE), 3);
@@ -269,7 +274,7 @@ public final class SATests {
         h.succeedWhen(() -> {
             int raw = count(h, new BlockPos(7, 2, 3), Items.RAW_IRON);
             h.assertTrue(count(h, new BlockPos(7, 2, 3), Items.IRON_ORE) == 0, "ores left in the chest " + diag(h));
-            h.assertTrue(raw >= 20, "expected at least 20 raw iron from 8 ores with Fortune III, got " + raw);
+            h.assertTrue(raw >= 50, "expected at least 50 raw iron from 24 ores with Fortune III, got " + raw);
         });
     }
 

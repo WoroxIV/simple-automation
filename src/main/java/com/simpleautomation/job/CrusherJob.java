@@ -24,6 +24,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -67,8 +68,8 @@ public final class CrusherJob implements Job {
 
     @Override
     public boolean acceptsTool(ItemStack tool) {
-        // Une pioche Silk Touch redonnerait le minerai tel quel : elle ne peut pas broyer.
-        return GolemTools.isPickaxe(tool) && tool.getEnchantments().keySet().stream().noneMatch(e -> e.is(Enchantments.SILK_TOUCH));
+        // Silk Touch est ignoré au broyage (voir complete) : n'importe quelle pioche convient.
+        return GolemTools.isPickaxe(tool);
     }
 
     /**
@@ -252,27 +253,47 @@ public final class CrusherJob implements Job {
             }
             breakRefused = false;
             BlockEntity be = state.hasBlockEntity() ? level.getBlockEntity(pos) : null;
-            List<ItemStack> best = List.of();
-            int bestCount = -1;
-            for (int r = 0; r < SAConfig.CRUSHER_ROLLS.getAsInt(); r++) {
-                List<ItemStack> drops = Block.getDrops(state, level, pos, be, fake, worker.tool);
-                int count = drops.stream().mapToInt(ItemStack::getCount).sum();
-                if (count > bestCount) {
-                    bestCount = count;
-                    best = drops;
-                }
-            }
+            // Un seul tirage vanilla (Fortune compris) avec la pioche privée de Silk Touch, puis le bonus du broyeur.
+            List<ItemStack> drops = Block.getDrops(state, level, pos, be, fake, withoutSilkTouch(worker.tool));
             float hardness = state.getDestroySpeed(level, pos);
             level.levelEvent(2001, pos, Block.getId(state));
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
             placed.remove(pos);
             // Un minerai qui se redonne lui-même retourne au coffre (avec les drops) et ne sera plus posé.
             Item oreItem = state.getBlock().asItem();
-            if (best.stream().anyMatch(s -> s.is(oreItem))) uncrushable.add(oreItem);
-            for (ItemStack drop : best) zone.inventory().output(drop);
+            if (drops.stream().anyMatch(s -> s.is(oreItem))) uncrushable.add(oreItem);
+            double multiplier = SAConfig.CRUSHER_MULTIPLIER.getAsDouble();
+            for (ItemStack drop : drops) {
+                if (drop.is(oreItem)) zone.inventory().output(drop);
+                else multiply(drop, multiplier, level, zone.inventory()::output);
+            }
             if (worker.tool.isDamageableItem() && hardness != 0) worker.tool.hurtAndBreak(1, level, (ServerPlayer) null, item -> {});
         } finally {
             fake.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        }
+    }
+
+    /** Copie de l'outil sans Silk Touch : le broyeur broie toujours, même avec la pioche de la carrière. */
+    static ItemStack withoutSilkTouch(ItemStack tool) {
+        if (tool.getEnchantments().keySet().stream().noneMatch(e -> e.is(Enchantments.SILK_TOUCH))) return tool;
+        ItemStack copy = tool.copy();
+        EnchantmentHelper.updateEnchantments(copy, m -> m.removeIf(e -> e.is(Enchantments.SILK_TOUCH)));
+        return copy;
+    }
+
+    /**
+     * {@code count × m} items : la partie entière, plus un avec une probabilité égale à la partie décimale (×1,5 sur un
+     * fer brut : 1 ou 2, 1,5 en moyenne). Découpé en piles de taille normale.
+     */
+    static void multiply(ItemStack drop, double m, ServerLevel level, Consumer<ItemStack> out) {
+        double exact = drop.getCount() * m;
+        int total = (int) Math.floor(exact);
+        if (level.random.nextDouble() < exact - total) total++;
+        int max = drop.getMaxStackSize();
+        while (total > 0) {
+            int n = Math.min(total, max);
+            out.accept(drop.copyWithCount(n));
+            total -= n;
         }
     }
 
