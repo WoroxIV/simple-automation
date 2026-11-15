@@ -1,6 +1,6 @@
 # Simple Automation
 
-**Put your copper golems to work.** Mark out a zone, drop a job controller in it, and every copper golem inside starts digging, chopping, smelting, farming or tending animals for you. No power, no machines to upgrade: the tool you hand a golem decides how well it works.
+**Put your copper golems to work.** Mark out a zone, drop a job controller in it, and every copper golem inside starts digging, chopping, smelting, farming or tending animals or fishing for you. No power, no machines to upgrade: the tool you hand a golem decides how well it works.
 
 Made for NeoForge 1.21.11. Works in survival from the start: everything is crafted from copper, a chest and a bit of redstone.
 
@@ -31,7 +31,7 @@ A golem holding something useless for its job shows a **"?"** above its head.
 
 ---
 
-## The six jobs
+## The seven jobs
 
 | Controller | Golem holds | What happens |
 |---|---|---|
@@ -41,10 +41,12 @@ A golem holding something useless for its job shows a **"?"** above its head.
 | **Crusher** | pickaxe | Takes ore blocks from the chest, places them in the zone and mines them for 50% more loot than the same pickaxe would give. Fortune counts, Silk Touch is ignored: mine ores with Silk Touch, crush them with Fortune III. |
 | **Farm** | nothing or a hoe | Harvests ripe crops and replants them, sows seeds from the chest on empty farmland, picks sweet berries and ripe cocoa (up to 12 blocks up jungle trunks). Pumpkin and melon stems keep a free spot for their fruit. |
 | **Barn** | animal food, shears, a bucket, a brush or a weapon | Food: breeds the animals that eat it (food taken from the chest), up to a limit per species (10 by default, babies included). Shears: shears sheep, mooshrooms and other shearable animals (modded ones too; a sheared mooshroom becomes a cow, like with a player). Bucket: milks cows, mooshrooms and goats into empty buckets from the chest. Brush: brushes armadillos for scutes. Sword, axe, mace or trident: culls the extra adults above the limit (never babies, named, leashed or tamed animals). Eggs and drops lying in the zone go to the chest, and experience comes out as crystals. |
+| **Fishery** | fishing rod | Golems stand on the bank and fish in the still water of the zone, one water block each, within 5 blocks of the bank. Same loot as a player: Luck of the Sea and Lure count, and treasure only bites in open water (at least 5×5 and 2 deep). Each catch gives 1 to 6 experience, as crystals, and wears the rod. |
 
 Tips:
 - **Quarry:** golems place cobblestone under themselves over caves, lava and water, and seal lava next to the blocks they dig. Put cobblestone in the chest; if there is none they still place it. The quarry waits on the stone layer until someone has a pickaxe.
 - **Barn:** fence the zone in. The controller warns you when animals wander out.
+- **Fishery:** dig a pond at least 5×5 and 2 deep, with nothing above it, for treasure: the water around the bobber must be open, like for a player.
 - **Crusher:** leave some free cells with a solid floor inside the zone, at the markers' height: that is where golems set the ores down.
 
 ---
@@ -84,6 +86,7 @@ All controllers use the same shape: copper ingots around, a **chest** in the mid
 | Crusher | grindstone |
 | Farm | iron hoe |
 | Barn | hay bale |
+| Fishery | fishing rod |
 
 - Border Marker ×2: lightning rod + redstone (shapeless)
 - Copper Pipe ×8: copper ingot, glass, copper ingot

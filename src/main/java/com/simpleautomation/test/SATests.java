@@ -149,6 +149,8 @@ public final class SATests {
         test("farm_stems_stay_intact", FarmTests::stemsStayIntact, 400, NO_RANDOM_TICKS);
         test("quarry_xp_to_bank", XpTests::quarryXpToBank, 1200);
         test("lumber_fungus_beside_netherrack", MiscTests::lumberFungusBesideNetherrack, 900);
+        test("fishery_catches_loot_and_xp", FisheryTests::catchesLootAndXp, 2400);
+        test("fishery_open_water_treasure", FisheryTests::openWaterTreasure, 100);
     }
 
     public static void register(IEventBus modBus) {
