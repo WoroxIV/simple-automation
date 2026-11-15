@@ -156,6 +156,10 @@ public final class SATests {
         test("farm_shears_honeycombs", BeekeepingTests::shearsGiveHoneycombs, 600);
         test("farm_bottle_honey", BeekeepingTests::bottleGivesHoneyBottle, 600);
         test("farm_hoe_ignores_hives", BeekeepingTests::hoeIgnoresHives, 400);
+        test("enchanter_enchants_book", EnchanterTests::enchantsBookAndKeepsChange, 900);
+        test("enchanter_only_plain_items", EnchanterTests::enchantsOnlyPlainItems, 1200);
+        test("enchanter_not_enough_xp", EnchanterTests::notEnoughXpSpendsNothing, 500);
+        test("enchanter_no_table", EnchanterTests::noTableIsReported, 600);
     }
 
     public static void register(IEventBus modBus) {

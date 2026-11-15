@@ -75,6 +75,10 @@ public final class FisheryTests {
         pond(h, 1, 7);
         // Petit bassin : eau en x,z 10..12.
         pond(h, 10, 12);
+        // Ses propres bornes : sans elles, le contrôleur s'attache à celles des tests voisins (les arènes sont proches)
+        // et leur vole leur zone, ce qui fait échouer au hasard les tests d'à côté.
+        h.setBlock(13, 1, 13, ModBlocks.BORDER_MARKER.get());
+        h.setBlock(15, 1, 15, ModBlocks.BORDER_MARKER.get());
         h.setBlock(14, 1, 14, ModBlocks.FISHERY_CONTROLLER.get());
         ZoneControllerBlockEntity be = TestKit.zone(h, new BlockPos(14, 1, 14));
         ItemStack rod = TestKit.enchanted(h, Items.FISHING_ROD, Enchantments.LUCK_OF_THE_SEA, 3);
