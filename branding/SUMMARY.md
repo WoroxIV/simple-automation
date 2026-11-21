@@ -11,7 +11,7 @@
 - `mod_logo.png` (256x256): in-game mod logo, the copper golem (`src/main/resources/simple_automation_logo.png`, `publish/logo.png`).
 - `banner.png` (798x228): top of the description.
 - `header_*.png` (798x84): one per main section of the description.
-- `DESCRIPTION.md`: full description, same text as `publish/DESCRIPTION.md`. Images point to
+- `DESCRIPTION.md`: description, same text as `publish/DESCRIPTION.md`. Images point to
   `https://raw.githubusercontent.com/WoroxIV/simple-automation/main/branding/`.
 - `branding.json` + `src/sa_branding.py` + `src/golem32.txt`: sources. Regenerate with
   `python branding/src/sa_branding.py branding/branding.json`.

@@ -13,15 +13,10 @@
   "header_ramp": "copper",
   "headers": [
     "GETTING STARTED",
-    "THE TOOL IS EVERYTHING",
     "THE TEN JOBS",
     "GOLEM CARE",
-    "EXPERIENCE CRYSTALS",
     "PIPES & FILTERS",
-    "RECIPES",
-    "COMPATIBILITY",
-    "SERVER FRIENDLY",
-    "FAQ"
+    "COMPATIBILITY"
   ],
   "seed": 7,
   "ornament": "gear"
