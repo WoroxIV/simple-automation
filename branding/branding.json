@@ -23,5 +23,6 @@
     "SERVER FRIENDLY",
     "FAQ"
   ],
-  "seed": 7
+  "seed": 7,
+  "ornament": "gear"
 }

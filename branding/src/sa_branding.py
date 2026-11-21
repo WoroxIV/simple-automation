@@ -4,7 +4,7 @@ Reuses the shared generator (~/.claude/skills/mod-branding/branding.py) for font
 and title layout. The copper golem comes from golem32.txt (the mod icon); the pickaxe is drawn
 in code so the head always sits centred on the handle.
 
-    python branding/src/sa_branding.py branding/branding.json [--only logo,banner,title,headers]
+    python branding/src/sa_branding.py branding/branding.json [--only logo,modlogo,banner,headers]
 """
 import json
 import math
@@ -39,31 +39,12 @@ B.SKIES["workshop"] = [C(h) for h in [
 B.GUARD[:] = [CU[0], CU[2], CU[3], CU[4]]
 B.GUARD_OUT = CU_OUT
 B.GEM[:] = [OX[1], OX[3], OX[4]]
+# engrenages du logo carré en cuivre oxydé
+B.ORNAMENT_SHADES[:] = [OX[1], OX[2], OX[3], OX[4]]
+B.ORNAMENT_OUTLINE = OX_OUT
 
 
 # --------------------------------------------------------------------------- shapes
-def gear(cv, cx, cy, r, teeth=8, hole=None):
-    hole = r * 0.42 if hole is None else hole
-    pts = {}
-    for y in range(int(cy - r - 2), int(cy + r + 3)):
-        for x in range(int(cx - r - 2), int(cx + r + 3)):
-            dx, dy = x + 0.5 - cx, y + 0.5 - cy
-            d = math.hypot(dx, dy)
-            a = math.atan2(dy, dx)
-            tooth = math.cos(a * teeth) > 0.25
-            rr = r if tooth else r * 0.78
-            if d <= rr and d >= hole:
-                light = -(dx + dy) / (d + 0.01)
-                if d > rr - 1.2:
-                    c = OX[1] if light > 0.2 else OX[4]
-                elif d < hole + 1.2:
-                    c = OX[4] if light > 0.2 else OX[2]
-                else:
-                    c = pick([OX[1], OX[2], OX[3], OX[4]], 0.5 - light * 0.45, x, y)
-                pts[(x, y)] = c
-    cv.stamp(set(pts), lambda x, y: pts[(x, y)], OX_OUT)
-
-
 def pickaxe_head(cv, tx, ty, R=10.0, half_angle=66, thick=2.9):
     """Solid iron arc centred on the handle tip (tx, ty) of a (1,-1) handle; bulges away from the
     golem, tips curve back toward the hand. Built as one distance field so the band never breaks."""
@@ -148,30 +129,9 @@ def upscale(src, k):
     return cv
 
 
-def make_icon(bg=True):
-    """Project icon: 36x36, copper frame + dotted slate, golem centred. Without bg: bare 32x32."""
-    g = golem_icon()
-    if not bg:
-        return g
-    cv = Canvas(36, 36)
-    slate, dot = C("#34404f"), C("#3c4959")
-    for y in range(36):
-        for x in range(36):
-            edge = min(x, y, 35 - x, 35 - y)
-            if edge == 0:
-                c = CU_OUT
-            elif edge == 1:
-                c = CU[3]
-            else:
-                c = dot if y % 2 and x % 4 == (1 if y % 4 == 3 else 3) else slate
-            cv.set(x, y, c)
-    cv.paste(g, 3, 2)  # contenu du sprite sur x 1..30 : centré
-    return cv
-
-
 # --------------------------------------------------------------------------- outputs
 def make_banner(cfg):
-    W, H = 280, 76
+    W, H = 266, 76  # x3 = 798 px
     cv = Canvas(W, H)
     pal = B.SKIES[cfg.get("sky", "workshop")]
     seed = cfg.get("seed", 7)
@@ -180,28 +140,14 @@ def make_banner(cfg):
     B.mountains(cv, 77, 14, B.darken(pal[1], 0.9), B.darken(pal[3], 0.9), seed=seed - 2, rough=1.4)
     lines = cfg["title"]
     gap = 2
-    side = 70
+    side = 66  # "AUTOMATION" x2 = 132 px doit tenir entre les golems
     scales = B.fit_title(lines, W - 2 * side)
     top = max(4, (H - B.title_height(scales, gap)) // 2 - 1)
     B.draw_title(cv, lines, W // 2, top, scales, gap)
     g = upscale(golem_icon(), 2)  # même golem que l'icône, pixels 2x comme le titre
-    cv.paste(g, 4, H - 2 - g.h)
-    cv.paste(g, W - 4 - g.w, H - 2 - g.h, flip=True)
+    cv.paste(g, 2, H - 2 - g.h)
+    cv.paste(g, W - 2 - g.w, H - 2 - g.h, flip=True)
     B.frame(cv)
-    return cv
-
-
-def make_title(cfg):
-    lines = cfg["title"]
-    gap = 1
-    scales = [2] * len(lines)
-    side = 26
-    W = max(text_w(lines, scales) + 2 * side, 180)
-    H = max(42, B.title_height(scales, gap) + 2)
-    cv = Canvas(W, H)
-    B.draw_title(cv, lines, W // 2, 2, scales, gap)
-    gear(cv, 12, H // 2, 10)
-    gear(cv, W - 13, H // 2, 10)
     return cv
 
 
@@ -232,10 +178,11 @@ def main():
     gold = B.RAMPS["gold"]
     B.RAMPS["gold"] = B.RAMPS[cfg.get("header_ramp", "copper")]
     jobs = {
-        # icône CurseForge/Modrinth 540 px et logo du mod 256 px (simple_automation_logo.png)
-        "logo": lambda: {"logo.png": (make_icon(True), 15), "logo_transparent.png": (make_icon(False), 8)},
+        # logo CurseForge/Modrinth : titre + engrenages, carré <= 512 px
+        "logo": lambda: {"logo.png": (B.make_logo(cfg), None)},
+        # logo du mod dans le jeu (simple_automation_logo.png) : le golem, 256 px
+        "modlogo": lambda: {"mod_logo.png": (golem_icon(), 8)},
         "banner": lambda: {"banner.png": make_banner(cfg)},
-        "title": lambda: {"title_logo.png": make_title(cfg)},
         "headers": lambda: {f"header_{B.slug(t)}.png": make_header(t, i + 1)
                             for i, t in enumerate(cfg.get("headers", []))},
     }
@@ -245,7 +192,7 @@ def main():
                 continue
             for name, cv in job().items():
                 cv, scale = cv if isinstance(cv, tuple) else (cv, None)
-                im = cv.image(scale)
+                im = cv.image(scale, B.LOGO_MAX if key in ("logo", "modlogo") else B.BANNER_MAX)
                 B.save(im, os.path.join(out, name))
                 print(f"{name:32s} {im.width}x{im.height}")
     finally:
