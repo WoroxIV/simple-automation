@@ -1,12 +1,12 @@
-# Simple Automation
+![Simple Automation](https://raw.githubusercontent.com/WoroxIV/simple-automation/main/branding/banner.png)
 
-**Put your copper golems to work.** Mark out a zone, drop a job controller in it, and every copper golem inside starts digging, chopping, smelting, farming, tending animals, fishing, guarding, enchanting or crafting for you. No power, no machines to upgrade: the tool you hand a golem decides how well it works.
+**Put your copper golems to work.** Mark out a zone, drop one of the **ten job controllers** in it, and every copper golem inside starts mining, felling trees, smelting, crushing ores, farming and keeping bees, tending animals, fishing, guarding, enchanting or crafting and brewing for you. No power, no machines to upgrade: the tool you hand a golem decides how well it works.
 
 Made for NeoForge 1.21.11. Works in survival from the start: everything is crafted from copper, a chest and a bit of redstone.
 
 ---
 
-## Getting started (in 1 minute)
+![Getting started](https://raw.githubusercontent.com/WoroxIV/simple-automation/main/branding/header_getting_started.png)
 
 1. **Craft two Border Markers** (lightning rod + redstone gives 2) and place them at **two opposite corners** of the area you want to work on. Zones can be up to 64 × 64 blocks (configurable).
 2. **Place a job controller** inside the zone, or at most 2 blocks outside it. Lines on the ground show the zone.
@@ -18,7 +18,7 @@ Right-click the controller at any time: it tells you the zone size, how many gol
 
 ---
 
-## The tool is everything
+![The tool is everything](https://raw.githubusercontent.com/WoroxIV/simple-automation/main/branding/header_the_tool_is_everything.png)
 
 A golem works like a player holding the same tool:
 
@@ -31,7 +31,7 @@ A golem holding something useless for its job shows a **"?"** above its head.
 
 ---
 
-## The ten jobs
+![The ten jobs](https://raw.githubusercontent.com/WoroxIV/simple-automation/main/branding/header_the_ten_jobs.png)
 
 | Controller | Golem holds | What happens |
 |---|---|---|
@@ -57,7 +57,7 @@ Tips:
 
 ---
 
-## Golem care
+![Golem care](https://raw.githubusercontent.com/WoroxIV/simple-automation/main/branding/header_golem_care.png)
 
 - **Oxidation:** like vanilla copper golems, workers slowly oxidize and **slow down**. A fully oxidized golem freezes.
 - **Wax** a golem with honeycomb to stop oxidation, **scrape** it by sneaking and right-clicking with an axe.
@@ -69,7 +69,19 @@ Idle golems never stand around in the void: they walk next to the closest busy g
 
 ---
 
-## Copper Pipe, Wrench and Pipe Filter
+![Experience crystals](https://raw.githubusercontent.com/WoroxIV/simple-automation/main/branding/header_experience_crystals.png)
+
+Golems never spill experience orbs. Everything they earn (mined ores, smelting, breeding, culling, fishing, guard kills) goes to the controller, which puts one **Experience Crystal** (10 experience points) in its chests for every 10 points.
+
+- **Right-click** a crystal to absorb it, **sneak** to absorb the whole stack. Mending repairs as usual.
+- Crystals stack and travel through pipes: send them to your enchanting room.
+- The **Enchanter** pays with the controller's stored experience first, then with crystals from its chests.
+- Right-click a controller (or look at it with Jade) to see the experience waiting for the next crystal.
+- Silk Touch gives no experience, as in vanilla.
+
+---
+
+![Pipes & filters](https://raw.githubusercontent.com/WoroxIV/simple-automation/main/branding/header_pipes___filters.png)
 
 One pipe, no tiers, instant transfer.
 
@@ -80,7 +92,7 @@ One pipe, no tiers, instant transfer.
 
 ---
 
-## Recipes
+![Recipes](https://raw.githubusercontent.com/WoroxIV/simple-automation/main/branding/header_recipes.png)
 
 All controllers use the same shape: copper ingots around, a **chest** in the middle, **redstone** at the bottom and the job's item at the top:
 
@@ -107,7 +119,7 @@ With JEI installed, every block and item also has an information page.
 
 ---
 
-## Compatibility
+![Compatibility](https://raw.githubusercontent.com/WoroxIV/simple-automation/main/branding/header_compatibility.png)
 
 - **Jade:** look at a controller to see its job, status, workers (busy, idle, missing a tool) and stored items; look at a pipe to see the mode and filter of each side.
 - **JEI:** information pages for every block and item, and you can drag items from JEI straight into a Pipe Filter or a Recipe Card.
@@ -122,16 +134,16 @@ With JEI installed, every block and item also has an information page.
 
 ---
 
-## Server friendly
+![Server friendly](https://raw.githubusercontent.com/WoroxIV/simple-automation/main/branding/header_server_friendly.png)
 
 - Golems inside a zone are **not entities**: the controller simulates them and clients only draw them. Fifty golems cost about as much as one block entity.
 - A **global block budget** caps how many blocks all golems of the server break per tick. Work slows down instead of lagging.
 - When the chests are full the zone **pauses**: nothing is dropped on the ground.
-- Everything is configurable in `simple_automation-server.toml` (world `serverconfig` folder): zone size, golems per zone, block budget, work speed, walk speed, crusher bonus, barn animal limit, pipe speed.
+- Everything is configurable in `simple_automation-server.toml` (world `serverconfig` folder): zone size, golems per zone, block budget, work speed, walk speed, crusher bonus, lumber sapling fallback and wait, barn animal limit, pipe speed.
 
 ---
 
-## FAQ
+![FAQ](https://raw.githubusercontent.com/WoroxIV/simple-automation/main/branding/header_faq.png)
 
 **My golem does nothing.** Right-click the controller: it tells you why (no tool, wrong tool, chest full, no pickaxe for stone...). A "?" over a golem means it holds the wrong item.
 

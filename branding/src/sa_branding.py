@@ -1,17 +1,20 @@
 """Simple Automation branding: copper golem + oxidized gear theme.
 
 Reuses the shared generator (~/.claude/skills/mod-branding/branding.py) for fonts, skies, frames
-and title layout, and swaps the sword/shield emblem for a copper golem holding a pickaxe.
+and title layout. The copper golem comes from golem32.txt (the mod icon); the pickaxe is drawn
+in code so the head always sits centred on the handle.
 
     python branding/src/sa_branding.py branding/branding.json [--only logo,banner,title,headers]
 """
 import json
 import math
 import os
-import random
 import sys
 
+# générateur partagé : skill de l'espace (minecraft/.claude/skills), ancien emplacement en secours
+_HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.expanduser("~/.claude/skills/mod-branding"))
+sys.path.insert(0, os.path.normpath(os.path.join(_HERE, "../../../../.claude/skills/mod-branding")))
 import branding as B  # noqa: E402
 from branding import C, Canvas, pick, N4, N8  # noqa: E402
 
@@ -20,7 +23,6 @@ CU = [C("#f6b08e"), C("#e3826c"), C("#c87456"), C("#a75a40"), C("#7f4130"), C("#
 CU_OUT = C("#2e1710")
 OX = [C("#d8f0e8"), C("#8fd0b6"), C("#76b39c"), C("#5a9c84"), C("#3a6e5e"), C("#1b3830")]
 OX_OUT = C("#0c1c18")
-EYE = C("#1c2626")
 WOOD = [C("#d8aa68"), C("#c49a5c"), C("#7a5230"), C("#4a2e1a")]
 IRON = [C("#ffffff"), C("#f2f2f6"), C("#c4c4d0"), C("#9a9aa6"), C("#6a6a78")]
 IRON_OUT = C("#1a1a24")
@@ -40,23 +42,6 @@ B.GEM[:] = [OX[1], OX[3], OX[4]]
 
 
 # --------------------------------------------------------------------------- shapes
-def rect(x0, y0, w, h):
-    return {(x, y) for x in range(x0, x0 + w) for y in range(y0, y0 + h)}
-
-
-def box_shade(mask, x, y, ramp=CU):
-    """Top-left lit, bottom-right shaded block shading."""
-    if (x, y - 1) not in mask:
-        return ramp[1]
-    if (x - 1, y) not in mask:
-        return ramp[1] if y % 3 else ramp[2]
-    if (x + 1, y) not in mask or (x, y + 1) not in mask:
-        return ramp[4]
-    if (x + 2, y) not in mask or (x, y + 2) not in mask:
-        return ramp[3]
-    return ramp[2]
-
-
 def gear(cv, cx, cy, r, teeth=8, hole=None):
     hole = r * 0.42 if hole is None else hole
     pts = {}
@@ -79,22 +64,40 @@ def gear(cv, cx, cy, r, teeth=8, hole=None):
     cv.stamp(set(pts), lambda x, y: pts[(x, y)], OX_OUT)
 
 
-def pickaxe_head(cv, tx, ty, span=6):
-    """Iron head centred on the handle tip (tx, ty), perpendicular to a (1,-1) handle, ends curved down."""
+def pickaxe_head(cv, tx, ty, R=10.0, half_angle=66, thick=2.9):
+    """Solid iron arc centred on the handle tip (tx, ty) of a (1,-1) handle; bulges away from the
+    golem, tips curve back toward the hand. Built as one distance field so the band never breaks."""
+    ux, uy = 1 / math.sqrt(2), -1 / math.sqrt(2)  # handle direction
+    cx, cy = tx + 0.5 - ux * R, ty + 0.5 - uy * R  # circle centre, down the handle
+    lim = math.radians(half_angle)
     pts = {}
-    for i in range(-span, span + 1):
-        k = (i * i) // (2 * span)
-        x, y = tx + i - k, ty + i + k
-        far = abs(i) >= span - 1
-        pts[(x, y)] = IRON[3] if far else IRON[1]
-        pts[(x + 1, y)] = IRON[4] if far else IRON[2]
-        if abs(i) < span - 2:
-            pts[(x + 1, y + 1)] = IRON[3]
-        if abs(i) < span - 1:
-            pts[(x, y - 1)] = IRON[0] if i < 0 else IRON[1]
+    for y in range(int(ty - R - 3), int(ty + R + 3)):
+        for x in range(int(tx - R - 3), int(tx + R + 3)):
+            dx, dy = x + 0.5 - cx, y + 0.5 - cy
+            d = math.hypot(dx, dy)
+            a = math.atan2(dx * uy - dy * ux, dx * ux + dy * uy)  # angle off the handle axis
+            if abs(a) > lim:
+                continue
+            t = abs(a) / lim
+            th = thick - (thick - 1.2) * t  # thick in the middle, pointed tips
+            off = d - R
+            if -th * 0.55 <= off <= th * 0.45:
+                nx, ny = dx / d, dy / d
+                light = -(nx + ny) / math.sqrt(2)  # outer face lit from the top-left
+                if off > th * 0.45 - 1:
+                    c = IRON[0] if light > 0.3 else IRON[1] if light > -0.3 else IRON[3]
+                elif off < -th * 0.55 + 1:
+                    c = IRON[3] if t < 0.85 else IRON[4]
+                else:
+                    c = IRON[1] if light > 0 else IRON[2]
+                if t > 0.88:
+                    c = IRON[3]
+                pts[(x, y)] = c
     cv.stamp(set(pts), lambda x, y: pts[(x, y)], IRON_OUT)
-    for (x, y) in [(tx, ty), (tx + 1, ty), (tx, ty - 1)]:
-        cv.set(x, y, IRON[3])
+    # socket where the handle enters the head
+    for (x, y) in [(tx, ty + 1), (tx - 1, ty + 1), (tx, ty + 2)]:
+        if (x, y) in pts:
+            cv.set(x, y, IRON[4])
 
 
 def handle(cv, x0, y0, n):
@@ -105,82 +108,68 @@ def handle(cv, x0, y0, n):
     cv.stamp(set(h), lambda x, y: h[(x, y)], CU_OUT)
 
 
-def golem(cv, x0, y0, tool=True, flip=False, rust_seed=1):
-    """Copper golem, 30 px wide (+ pickaxe up to 52), 45 px tall. (x0, y0) = top-left of its box."""
-    g = Canvas(54, 46)
-    ant = rect(14, 4, 3, 9)
-    ball = rect(13, 1, 5, 4) - {(13, 1), (17, 1)}
-    g.stamp(ant, lambda x, y: CU[1] if x == 14 else CU[3] if x == 16 else CU[2], CU_OUT)
-    g.stamp(ball, lambda x, y: box_shade(ball, x, y), CU_OUT)
-    body = rect(7, 28, 17, 11)
-    legs = rect(8, 38, 6, 6) | rect(17, 38, 6, 6)
-    g.stamp(legs, lambda x, y: box_shade(legs, x, y), CU_OUT)
-    g.stamp(body, lambda x, y: box_shade(body, x, y), CU_OUT)
-    plate = rect(11, 31, 9, 5)
-    for (x, y) in plate:
-        g.set(x, y, CU[4] if (x, y - 1) not in plate or x == 11 else CU[3])
-    for (x, y) in rect(13, 33, 5, 2):
-        g.set(x, y, CU[5])
-    arm_l = rect(2, 29, 4, 10)
-    arm_r = rect(25, 29, 4, 9)
-    if tool:
-        handle(g, 26, 39, 18)
-        pickaxe_head(g, 44, 21, 6)
-    g.stamp(arm_l, lambda x, y: box_shade(arm_l, x, y), CU_OUT)
-    g.stamp(arm_r, lambda x, y: box_shade(arm_r, x, y), CU_OUT)
-    if tool:  # fingers over the handle
-        for (x, y) in [(27, 37), (28, 36)]:
-            g.set(x, y, WOOD[1])
-        g.set(26, 37, CU[3]); g.set(26, 36, CU[4])
-    head = rect(1, 12, 29, 15)
-    g.stamp(head, lambda x, y: box_shade(head, x, y), CU_OUT)
-    for x in range(3, 28):
-        g.set(x, 15, CU[4])
-    for ex in (4, 18):
-        for (x, y) in rect(ex, 17, 8, 5):
-            g.set(x, y, EYE)
-        g.set(ex + 6, 17, OX[0])
-    nose = rect(14, 16, 3, 8)
-    for (x, y) in nose:
-        g.set(x, y, CU[1] if x == 14 else CU[3] if x < 16 else CU[4])
-    g.set(14, 16, CU[0])
-    for (x, y) in rect(14, 24, 3, 1):
-        g.set(x, y, CU[5])
-    rnd = random.Random(rust_seed)
-    for (sx, sy) in [(3, 23), (4, 24), (26, 22), (27, 21), (9, 37), (20, 36), (21, 37), (3, 36)]:
-        g.set(sx, sy, OX[3] if rnd.random() < 0.6 else OX[2])
-    g.set(4, 23, OX[1])
-    cv.paste(g, x0, y0, flip=flip)
-    return g
-
-
-# --------------------------------------------------------------------------- outputs
-def rounded_bg(cv, cfg):
-    N = cv.w
-    tmp = Canvas(N, N)
-    B.sky(tmp, B.SKIES[cfg.get("sky", "workshop")], N * 0.62, N * 0.4, N * 0.6, 0.05, 0.3, rays=False,
-          seed=cfg.get("seed", 3))
-    r = 7
-    for y in range(N):
-        for x in range(N):
-            d = math.hypot(x - min(max(x, r), N - 1 - r), y - min(max(y, r), N - 1 - r))
-            if d <= r - 0.5:
-                edge = d > r - 1.5 or x in (0, N - 1) or y in (0, N - 1)
-                edge2 = (d > r - 2.5 or x in (1, N - 2) or y in (1, N - 2)) and not edge
-                cv.set(x, y, CU_OUT if edge else CU[3] if edge2 else tmp.get(x, y))
-
-
-def make_logo(cfg, bg=True):
-    N = 60
-    cv = Canvas(N, N)
-    if bg:
-        rounded_bg(cv, cfg)
-    gear(cv, 45, 14, 10, teeth=8)
-    gear(cv, 48, 47, 7.5, teeth=8, hole=3)
-    golem(cv, 4, 8)
+def load_sprite(name="golem32.txt"):
+    """Text grid next to this script: palette lines '<char> <#hex>', blank line, then the rows."""
+    with open(os.path.join(_HERE, name), encoding="utf-8") as f:
+        lines = [l.rstrip("\n") for l in f if not l.startswith("#")]
+    sep = lines.index("")
+    pal = {l[0]: C(l[2:9]) for l in lines[:sep]}
+    rows = [r for r in lines[sep + 1:] if r]
+    cv = Canvas(len(rows[0]), len(rows))
+    for y, r in enumerate(rows):
+        for x, ch in enumerate(r):
+            if ch != ".":
+                cv.set(x, y, pal[ch])
     return cv
 
 
+def golem_icon():
+    """32x32 icon golem: the pickaxe is drawn behind the sprite so the hand holds the handle,
+    with the head centred on the handle tip (same pickaxe_head as the big golem)."""
+    cv = Canvas(32, 32)
+    handle(cv, 20, 23, 7)          # tip at (26, 17)
+    pickaxe_head(cv, 27, 16, R=7.5, half_angle=62, thick=2.6)
+    sp = load_sprite()
+    for y in range(32):
+        for x in range(32):
+            c = sp.get(x, y)
+            if c:
+                cv.set(x, y, c)
+    return cv
+
+
+def upscale(src, k):
+    cv = Canvas(src.w * k, src.h * k)
+    for y in range(cv.h):
+        for x in range(cv.w):
+            c = src.get(x // k, y // k)
+            if c:
+                cv.set(x, y, c)
+    return cv
+
+
+def make_icon(bg=True):
+    """Project icon: 36x36, copper frame + dotted slate, golem centred. Without bg: bare 32x32."""
+    g = golem_icon()
+    if not bg:
+        return g
+    cv = Canvas(36, 36)
+    slate, dot = C("#34404f"), C("#3c4959")
+    for y in range(36):
+        for x in range(36):
+            edge = min(x, y, 35 - x, 35 - y)
+            if edge == 0:
+                c = CU_OUT
+            elif edge == 1:
+                c = CU[3]
+            else:
+                c = dot if y % 2 and x % 4 == (1 if y % 4 == 3 else 3) else slate
+            cv.set(x, y, c)
+    cv.paste(g, 3, 2)  # contenu du sprite sur x 1..30 : centré
+    return cv
+
+
+# --------------------------------------------------------------------------- outputs
 def make_banner(cfg):
     W, H = 280, 76
     cv = Canvas(W, H)
@@ -191,14 +180,13 @@ def make_banner(cfg):
     B.mountains(cv, 77, 14, B.darken(pal[1], 0.9), B.darken(pal[3], 0.9), seed=seed - 2, rough=1.4)
     lines = cfg["title"]
     gap = 2
-    side = 62
+    side = 70
     scales = B.fit_title(lines, W - 2 * side)
     top = max(4, (H - B.title_height(scales, gap)) // 2 - 1)
     B.draw_title(cv, lines, W // 2, top, scales, gap)
-    gear(cv, 46, 20, 9, teeth=8)
-    gear(cv, W - 47, 20, 9, teeth=8)
-    golem(cv, 8, 25, rust_seed=2)
-    golem(cv, W - 8 - 54, 25, flip=True, rust_seed=5)
+    g = upscale(golem_icon(), 2)  # même golem que l'icône, pixels 2x comme le titre
+    cv.paste(g, 4, H - 2 - g.h)
+    cv.paste(g, W - 4 - g.w, H - 2 - g.h, flip=True)
     B.frame(cv)
     return cv
 
@@ -244,7 +232,8 @@ def main():
     gold = B.RAMPS["gold"]
     B.RAMPS["gold"] = B.RAMPS[cfg.get("header_ramp", "copper")]
     jobs = {
-        "logo": lambda: {"logo.png": make_logo(cfg, True), "logo_transparent.png": make_logo(cfg, False)},
+        # icône CurseForge/Modrinth 540 px et logo du mod 256 px (simple_automation_logo.png)
+        "logo": lambda: {"logo.png": (make_icon(True), 15), "logo_transparent.png": (make_icon(False), 8)},
         "banner": lambda: {"banner.png": make_banner(cfg)},
         "title": lambda: {"title_logo.png": make_title(cfg)},
         "headers": lambda: {f"header_{B.slug(t)}.png": make_header(t, i + 1)
@@ -255,7 +244,8 @@ def main():
             if only and key not in only:
                 continue
             for name, cv in job().items():
-                im = cv.image()
+                cv, scale = cv if isinstance(cv, tuple) else (cv, None)
+                im = cv.image(scale)
                 B.save(im, os.path.join(out, name))
                 print(f"{name:32s} {im.width}x{im.height}")
     finally:
