@@ -1,4 +1,20 @@
-## Unreleased
+## 2.2.0
+
+New jobs (Barn, Fishery, Guard Post, Enchanter, Workshop), beekeeping, experience crystals and a reliable Lumber Yard.
+
+### Fixed
+- Lumber Yard: a bee nest on a tree reaches the chest even when the axe breaks during the felling. Before, a broken axe could destroy the nest and release angry bees, or leave it floating.
+- Lumber Yard: a 2x2 dark oak or pale oak growing across the edge of the zone is replanted with another species right away. Before, a single dark oak sapling was planted, which never grows.
+- Lumber Yard: trees felled before this update wait the full `lumberFallbackSeconds` before another species is planted.
+- Barn: a culling hit refused by the animal no longer wears the weapon.
+- Fishery: looking for open water never loads the chunk next to a pond.
+- Breaking a controller drops the experience waiting for the next crystal as orbs, instead of losing it.
+- Workshop: a Recipe Card keeps its exact result. A card for swiftness tipped arrows never uses a poison lingering potion from the chest. Smithing still keeps the wear and enchantments of the upgraded item.
+
+### Changed
+- Enchanter: the table now keeps its offer like it does for a player. The same item at the same table always costs the same and gets the same enchantments, until something is enchanted. Golems no longer reroll until they get a cheap level: they wait for enough experience, like you would.
+- New project logo and description images.
+
 
 - Experience Crystal (new item): the experience earned by golems never drops as orbs anymore. The controller stores it and puts one crystal (10 experience points) in its chests for every 10 points. Right-click to use one crystal, sneak to use the whole stack; Mending repairs as usual. Clicking the controller (and Jade) shows the experience waiting for the next crystal.
 - Golems also take what they need (saplings, food, buckets…) from the items waiting in the controller, not only from the chests.

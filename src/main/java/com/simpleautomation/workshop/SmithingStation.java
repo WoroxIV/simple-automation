@@ -51,6 +51,11 @@ public final class SmithingStation extends RecipeStation {
     }
 
     @Override
+    boolean sameResult(ItemStack result, ItemStack expected) {
+        return result.is(expected.getItem()); // L'objet amélioré garde son usure et ses enchantements.
+    }
+
+    @Override
     @Nullable Output run(ServerLevel level, List<ItemStack> grid, ItemStack expected) {
         SmithingRecipeInput input = new SmithingRecipeInput(grid.get(0), grid.get(1), grid.get(2));
         RecipeHolder<SmithingRecipe> holder = recipe(level, input);

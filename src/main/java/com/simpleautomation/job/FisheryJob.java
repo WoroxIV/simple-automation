@@ -189,6 +189,7 @@ public final class FisheryJob implements Job {
     }
 
     private static OpenType blockType(Level level, BlockPos pos) {
+        if (!level.isLoaded(pos)) return OpenType.INVALID; // Étang en bord de chunk : ne jamais charger le voisin.
         BlockState state = level.getBlockState(pos);
         if (state.isAir() || state.is(Blocks.LILY_PAD)) return OpenType.ABOVE_WATER;
         var fluid = state.getFluidState();

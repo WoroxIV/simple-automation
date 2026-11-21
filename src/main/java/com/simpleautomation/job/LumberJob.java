@@ -75,7 +75,7 @@ public final class LumberJob implements Job {
         static final Codec<Replant> CODEC = RecordCodecBuilder.create(i -> i.group(
                 BlockPos.CODEC.listOf().fieldOf("spots").forGetter(Replant::spots),
                 Identifier.CODEC.optionalFieldOf("sapling").forGetter(Replant::sapling),
-                Codec.LONG.optionalFieldOf("since", 0L).forGetter(Replant::since)
+                Codec.LONG.optionalFieldOf("since", -1L).forGetter(Replant::since)
         ).apply(i, Replant::new));
 
         boolean mega() {
@@ -186,7 +186,8 @@ public final class LumberJob implements Job {
         }
         // Les feuilles tombent avec l'arbre : leurs pousses arrivent tout de suite au coffre pour replanter.
         List<BlockPos> leaves = TreeScanner.collectLeaves(level, logs, b);
-        List<BlockPos> nests = nestsOn(level, logs, leaves);
+        // Nids d'abord : ils ne dépendent pas de la hache, et ne restent pas en l'air si elle casse en route.
+        for (BlockPos nest : nestsOn(level, logs, leaves)) takeNest(zone, level, worker, nest);
         // Du haut vers le bas, la souche en dernier : si l'outil casse en route, l'arbre reste debout.
         logs.sort(Comparator.comparingInt((BlockPos p) -> p.getY()).reversed());
         for (BlockPos log : logs) {
@@ -197,7 +198,6 @@ public final class LumberJob implements Job {
             List<ItemStack> drops = GolemTools.harvest(zone, worker, leaf, false, false);
             if (drops != null) drops.forEach(zone.inventory()::output);
         }
-        for (BlockPos nest : nests) takeNest(zone, level, worker, nest);
         List<BlockPos> spots = replantSpots(level, base, stumps, sapling);
         if (spots.isEmpty()) return;
         // Liste pleine (pousses jamais fournies) : on oublie la plus ancienne plutôt que de ne plus rien replanter.
@@ -235,7 +235,8 @@ public final class LumberJob implements Job {
         fake.setItemInHand(InteractionHand.MAIN_HAND, worker.tool);
         try {
             if (NeoForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, state, fake)).isCanceled()) return;
-            ItemStack silk = worker.tool.copy();
+            // Outil à part : la hache du golem peut être cassée (vide), et ne doit pas gagner Silk Touch.
+            ItemStack silk = new ItemStack(Items.WOODEN_AXE);
             silk.enchant(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH), 1);
             BlockEntity be = level.getBlockEntity(pos);
             List<ItemStack> drops = Block.getDrops(state, level, pos, be, fake, silk);
@@ -380,6 +381,10 @@ public final class LumberJob implements Job {
                 replant.remove(i);
                 continue;
             }
+            if (r.since() < 0) { // Sauvegarde d'avant ce champ : le délai part de maintenant, pas de la création du monde.
+                r = new Replant(r.spots(), r.sapling(), level.getGameTime());
+                replant.set(i, r);
+            }
             boolean late = fallback > 0 && level.getGameTime() - r.since() >= fallback * 20L;
             Item wanted = r.sapling().filter(BuiltInRegistries.ITEM::containsKey).map(BuiltInRegistries.ITEM::getValue).orElse(null);
             List<BlockPos> plantAt = null;
@@ -391,7 +396,9 @@ public final class LumberJob implements Job {
                 if (r.mega() && free.size() == 4 && have >= 4 && free.stream().allMatch(p -> canPlant(level, p, new ItemStack(w)))) {
                     plantAt = free;
                     use = w;
-                } else if ((!r.mega() || (late && !megaOnly)) && have >= 1 && canPlant(level, free.getFirst(), new ItemStack(w))) {
+                } else if (megaOnly && !r.mega()) {
+                    wanted = null; // Chêne noir/pâle à cheval sur le bord de zone : seul, il ne pousserait jamais.
+                } else if (!megaOnly && (!r.mega() || late) && have >= 1 && canPlant(level, free.getFirst(), new ItemStack(w))) {
                     plantAt = List.of(free.getFirst());
                     use = w;
                 }

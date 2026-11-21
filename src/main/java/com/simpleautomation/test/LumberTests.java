@@ -26,6 +26,10 @@ public final class LumberTests {
 
     /** Sol, bornes (1..5), contrôleur et coffre, un golem à la hache en fer. */
     private static ChestBlockEntity yard(GameTestHelper h, Block floor) {
+        return yard(h, floor, new ItemStack(Items.IRON_AXE));
+    }
+
+    private static ChestBlockEntity yard(GameTestHelper h, Block floor, ItemStack axe) {
         for (int x = 0; x <= 8; x++)
             for (int z = 0; z <= 8; z++) h.setBlock(x, 1, z, floor);
         h.setBlock(1, 2, 1, ModBlocks.BORDER_MARKER.get());
@@ -33,7 +37,7 @@ public final class LumberTests {
         h.setBlock(6, 2, 6, ModBlocks.LUMBER_CONTROLLER.get());
         h.setBlock(CHEST, Blocks.CHEST);
         CopperGolem golem = h.spawn(EntityType.COPPER_GOLEM, new BlockPos(1, 2, 4));
-        golem.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_AXE));
+        golem.setItemInHand(InteractionHand.MAIN_HAND, axe);
         return h.getBlockEntity(CHEST, ChestBlockEntity.class);
     }
 
@@ -157,6 +161,42 @@ public final class LumberTests {
             h.assertTrue(bees.size() == 1, "expected the bee inside the nest, got " + bees.size());
             var props = nest.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
             h.assertTrue(Integer.valueOf(3).equals(props.get(BeehiveBlock.HONEY_LEVEL)), "honey level lost: " + props);
+        });
+    }
+
+    /** Hache à 1 point de durabilité : elle casse sur la 1re bûche, mais le nid arrive quand même entier au coffre. */
+    public static void beeNestWithBreakingAxe(GameTestHelper h) {
+        ItemStack axe = new ItemStack(Items.IRON_AXE);
+        axe.setDamageValue(axe.getMaxDamage() - 1);
+        yard(h, Blocks.DIRT, axe);
+        for (int y = 2; y <= 6; y++) h.setBlock(3, y, 3, Blocks.OAK_LOG);
+        cap(h, 3, 7, 3);
+        h.setBlock(4, 4, 3, Blocks.BEE_NEST);
+        h.succeedWhen(() -> {
+            h.assertBlockPresent(Blocks.AIR, 4, 4, 3);
+            h.assertTrue(TestKit.count(h, CHEST, Items.BEE_NEST) == 1, "the bee nest did not reach the chest");
+            h.assertBlockPresent(Blocks.OAK_LOG, 3, 2, 3); // la hache a cassé : la souche reste
+        });
+    }
+
+    /**
+     * Chêne noir 2×2 à cheval sur le bord de la zone (x 5..6) : seules 2 souches sont dedans. Un chêne noir seul ne
+     * pousserait jamais : on replante tout de suite un chêne avec les pousses du coffre.
+     */
+    public static void darkOakAtEdgeUsesOtherSapling(GameTestHelper h) {
+        ChestBlockEntity chest = yard(h, Blocks.DIRT);
+        chest.setItem(0, new ItemStack(Items.DARK_OAK_SAPLING, 4));
+        chest.setItem(1, new ItemStack(Items.OAK_SAPLING, 4));
+        for (int y = 2; y <= 7; y++)
+            for (int x = 5; x <= 6; x++)
+                for (int z = 2; z <= 3; z++) h.setBlock(x, y, z, Blocks.DARK_OAK_LOG);
+        cap(h, 5, 8, 2);
+        h.succeedWhen(() -> {
+            h.assertBlockPresent(Blocks.AIR, 5, 4, 2);
+            int dark = TestKit.countBlocks(h, Blocks.DARK_OAK_SAPLING, new BlockPos(0, 2, 0), new BlockPos(8, 2, 8));
+            int oak = TestKit.countBlocks(h, Blocks.OAK_SAPLING, new BlockPos(0, 2, 0), new BlockPos(8, 2, 8));
+            h.assertTrue(dark == 0, "a lone dark oak sapling was planted");
+            h.assertTrue(oak == 1, "expected 1 oak sapling, got " + oak);
         });
     }
 

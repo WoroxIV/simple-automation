@@ -31,6 +31,7 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.animal.golem.CopperGolem;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -734,6 +735,9 @@ public class ZoneControllerBlockEntity extends BlockEntity {
             for (Worker w : List.copyOf(workers)) release(server, w, null, true);
             for (ItemStack stack : inventory.buffer()) drop(server, pos, stack);
             inventory.buffer().clear();
+            // L'XP en attente (moins d'un cristal) sort en orbes, comme celle d'un four cassé.
+            int points = (int) Math.floor(xp.take(xp.stored()));
+            if (points > 0) ExperienceOrb.award(server, Vec3.atCenterOf(pos), points);
         }
         super.preRemoveSideEffects(pos, state);
     }

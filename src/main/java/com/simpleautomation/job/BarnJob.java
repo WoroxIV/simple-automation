@@ -318,8 +318,9 @@ public final class BarnJob implements Job {
                 return;
             }
             // L'XP de la mort (règles vanilla « tué par un joueur ») va au tampon de la zone, sans orbe.
-            XpCapture.during(zone, () -> a.hurtServer(level, level.damageSources().playerAttack(fake), Float.MAX_VALUE));
-            worker.tool.hurtAndBreak(1, level, (ServerPlayer) null, item -> {});
+            boolean[] hurt = new boolean[1];
+            XpCapture.during(zone, () -> hurt[0] = a.hurtServer(level, level.damageSources().playerAttack(fake), Float.MAX_VALUE));
+            if (hurt[0]) worker.tool.hurtAndBreak(1, level, (ServerPlayer) null, item -> {}); // Coup refusé : pas d'usure.
         } finally {
             fake.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         }

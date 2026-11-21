@@ -24,7 +24,15 @@ abstract class RecipeStation implements Station {
 
     private boolean valid(ServerLevel level, List<ItemStack> grid, ItemStack expected) {
         Output out = run(level, grid, expected);
-        return out != null && out.result().is(expected.getItem());
+        return out != null && sameResult(out.result(), expected);
+    }
+
+    /**
+     * Le résultat est-il celui de la fiche ? Objet et composants (une flèche à effet doit garder la potion de la fiche) ;
+     * la table de forgeron, elle, garde volontairement l'usure et les enchantements de l'objet amélioré.
+     */
+    boolean sameResult(ItemStack result, ItemStack expected) {
+        return ItemStack.isSameItemSameComponents(result, expected);
     }
 
     /** Les objets à prendre, case par case (vide pour une case vide), ou null si les coffres ne les ont pas. */
@@ -45,7 +53,8 @@ abstract class RecipeStation implements Station {
                 for (ItemStack s : stock) {
                     if (s.isEmpty() || ItemStack.isSameItem(s, ghost) != (pass == 0)) continue;
                     if (free(stock, picked, s) < 1) continue;
-                    if (pass == 1) {
+                    // Autre objet, ou même objet aux composants différents (autre potion...) : la recette doit le confirmer.
+                    if (pass == 1 || !ItemStack.isSameItemSameComponents(s, ghost)) {
                         grid.set(i, s.copyWithCount(1));
                         if (!valid(level, grid, expected)) continue;
                     }

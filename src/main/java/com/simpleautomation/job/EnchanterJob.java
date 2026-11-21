@@ -78,6 +78,12 @@ public final class EnchanterJob implements Job {
     private final Set<BlockPos> claimed = new HashSet<>();
     private final Map<BlockPos, Plan> plans = new HashMap<>();
     private long nextScan;
+    /**
+     * Graine d'enchantement de la zone, comme celle d'un joueur : tant qu'elle ne change pas, la table propose le même
+     * coût et les mêmes enchantements pour le même objet. Elle change après chaque enchantement réussi, pas à chaque
+     * essai : un golem ne peut pas « relancer » jusqu'à tomber sur un coût bas.
+     */
+    private int seed = RandomSource.create().nextInt();
 
     @Override
     public boolean acceptsTool(ItemStack tool) {
@@ -146,11 +152,19 @@ public final class EnchanterJob implements Job {
         return total;
     }
 
-    /** Coût (niveau requis) de la 3e option pour cet objet à cette puissance, 0 si elle n'existe pas (comme dans le menu). */
-    private static int optionCost(ServerLevel level, BlockPos table, int power, ItemStack sample, RandomSource random) {
-        int cost = EnchantmentHelper.getEnchantmentCost(random, OPTION, power, sample);
-        if (cost < OPTION + 1) cost = 0;
-        return EventHooks.onEnchantmentLevelSet(level, table, OPTION, power, sample, cost);
+    /**
+     * Coût (niveau requis) de la 3e option pour cet objet à cette puissance, 0 si elle n'existe pas. Même tirage que
+     * {@code EnchantmentMenu.slotsChanged} : graine fixée, puis les 3 options dans l'ordre (la 3e dépend des deux autres).
+     */
+    private int optionCost(ServerLevel level, BlockPos table, int power, ItemStack sample) {
+        RandomSource random = RandomSource.create(seed);
+        int cost = 0;
+        for (int option = 0; option <= OPTION; option++) {
+            cost = EnchantmentHelper.getEnchantmentCost(random, option, power, sample);
+            if (cost < option + 1) cost = 0;
+            cost = EventHooks.onEnchantmentLevelSet(level, table, option, power, sample, cost);
+        }
+        return cost;
     }
 
     /** XP disponible pour payer : le tampon, plus les cristaux des coffres. */
@@ -164,7 +178,7 @@ public final class EnchanterJob implements Job {
         ItemStack sample = zone.inventory().find(INPUT);
         if (sample.isEmpty()) return null;
         int power = power(level, table);
-        int cost = optionCost(level, table, power, sample, level.getRandom());
+        int cost = optionCost(level, table, power, sample);
         if (cost <= 0 || availableXp(zone) + 1.0E-6 < xpPrice(cost)) return null;
         return new Plan(power, cost);
     }
@@ -217,14 +231,15 @@ public final class EnchanterJob implements Job {
         // Une bibliothèque retirée en route : le prix et le résultat annoncés ne tiennent plus.
         if (power(level, table) < plan.power()) return;
         if (zone.inventory().count(LAPIS) < LAPIS_COST) return;
-        int xp = xpPrice(plan.cost());
-        if (availableXp(zone) + 1.0E-6 < xp) return;
 
         List<ItemStack> taken = new ArrayList<>();
         ItemStack input = take(zone, INPUT, 1, taken);
         if (input.isEmpty()) return;
-        // On regarde d'abord ce que donnerait l'enchantement : sans résultat, rien n'est dépensé.
-        List<EnchantmentInstance> chosen = choose(level, input, plan.cost());
+        // Le coût de l'objet vraiment pris (les coffres ont pu changer depuis le plan), puis ce qu'il donnerait :
+        // trop cher ou sans résultat, rien n'est dépensé.
+        int cost = optionCost(level, table, power(level, table), input);
+        int xp = xpPrice(cost);
+        List<EnchantmentInstance> chosen = cost > 0 && availableXp(zone) + 1.0E-6 >= xp ? choose(level, input, cost) : List.of();
         if (chosen.isEmpty()) {
             zone.inventory().output(input);
             return;
@@ -242,15 +257,19 @@ public final class EnchanterJob implements Job {
         zone.xp().take(fromBank);
         zone.xp().add(crystals * (double) XpBank.XP_PER_CRYSTAL - rest);
 
+        seed = level.getRandom().nextInt(); // Comme un joueur après un enchantement : nouvelle offre.
         ItemStack result = input.getItem().applyEnchantments(input, chosen);
         CommonHooks.onPlayerEnchantItem(zone.fakePlayer(), result, chosen);
         zone.inventory().output(result);
         level.playSound(null, table, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1.0F, level.getRandom().nextFloat() * 0.1F + 0.9F);
     }
 
-    /** Les enchantements de la 3e option, tirés comme dans le menu vanilla (un livre n'en garde qu'un de moins s'il en a plusieurs). */
-    private static List<EnchantmentInstance> choose(ServerLevel level, ItemStack stack, int cost) {
-        RandomSource random = level.getRandom();
+    /**
+     * Les enchantements de la 3e option, tirés comme dans le menu vanilla ({@code getEnchantmentList} : graine + option ;
+     * un livre en perd un au hasard s'il en a plusieurs).
+     */
+    private List<EnchantmentInstance> choose(ServerLevel level, ItemStack stack, int cost) {
+        RandomSource random = RandomSource.create(seed + OPTION);
         Optional<HolderSet.Named<Enchantment>> possible = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.IN_ENCHANTING_TABLE);
         if (possible.isEmpty()) return List.of();
         List<EnchantmentInstance> list = EnchantmentHelper.selectEnchantment(random, stack, cost, possible.get().stream());
@@ -299,10 +318,12 @@ public final class EnchanterJob implements Job {
 
     @Override
     public void save(ValueOutput out) {
+        out.putInt("seed", seed);
     }
 
     @Override
     public void load(ValueInput in) {
         reset(null);
+        seed = in.getIntOr("seed", seed);
     }
 }

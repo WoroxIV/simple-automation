@@ -144,6 +144,8 @@ public final class SATests {
         test("lumber_leaves_give_saplings", LumberTests::leavesGiveSaplings, 900);
         test("lumber_mangrove_beside_roots", LumberTests::mangroveReplantedBesideRoots, 900);
         test("lumber_bee_nest_falls_with_tree", LumberTests::beeNestFallsWithTree, 900);
+        test("lumber_bee_nest_breaking_axe", LumberTests::beeNestWithBreakingAxe, 900);
+        test("lumber_dark_oak_at_edge", LumberTests::darkOakAtEdgeUsesOtherSapling, 900);
         test("forge_xp_to_bank", XpTests::forgeXpToBank, 1600);
         test("crusher_plain_pickaxe_bonus", CrusherTests::plainPickaxeBonus, 1800);
         test("crusher_ignores_silk_touch", CrusherTests::ignoresSilkTouch, 900);
